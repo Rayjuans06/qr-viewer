@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información del Registro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+        .id-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .nombre {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+        }
+        .info-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        .label {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .value {
+            color: #333;
+            font-size: 16px;
+            word-break: break-word;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="id-badge" id="id">ID: --</div>
+            <div class="nombre" id="nombre">--</div>
+        </div>
+
+        <div class="info-group">
+            <div class="label">📧 Correo Electrónico</div>
+            <div class="value" id="correoForm">--</div>
+        </div>
+
+        <div class="info-group">
+            <div class="label">📱 Teléfono</div>
+            <div class="value" id="telefono">--</div>
+        </div>
+
+        <div class="info-group">
+            <div class="label">⏰ Hora de Inicio</div>
+            <div class="value" id="horaInicio">--</div>
+        </div>
+
+        <div class="info-group">
+            <div class="label">⏹️ Hora de Finalización</div>
+            <div class="value" id="horaFin">--</div>
+        </div>
+
+        <div class="info-group">
+            <div class="label">📝 Descripción</div>
+            <div class="value" id="descripcion">--</div>
+        </div>
+
+        <div class="footer">
+            <p>Información registrada en el sistema</p>
+            <p id="timestamp"></p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener parámetros de la URL
+        const params = new URLSearchParams(window.location.search);
+        const datosStr = params.get('data');
+        
+        if (datosStr) {
+            try {
+                const datos = JSON.parse(decodeURIComponent(datosStr));
+                
+                // Llenar los campos
+                document.getElementById('id').textContent = `ID: ${datos.id}`;
+                document.getElementById('nombre').textContent = datos.nombreCompleto || datos.nombre;
+                document.getElementById('correoForm').textContent = datos.correoForm;
+                document.getElementById('telefono').textContent = datos.telefono;
+                document.getElementById('horaInicio').textContent = datos.horaInicio;
+                document.getElementById('horaFin').textContent = datos.horaFin;
+                document.getElementById('descripcion').textContent = datos.descripcion;
+            } catch(e) {
+                document.querySelector('.container').innerHTML = '<p style="color:red;">Error al cargar los datos: ' + e.message + '</p>';
+            }
+        }
+        
+        // Mostrar timestamp
+        const now = new Date().toLocaleString('es-ES');
+        document.getElementById('timestamp').textContent = `Consultado: ${now}`;
+    </script>
+</body>
+</html>
