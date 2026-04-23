@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Información del Registro</title>
+    <title>Información de Embarque</title>
     <style>
         * {
             margin: 0;
@@ -23,7 +23,7 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
             padding: 32px;
             animation: slideIn 0.4s ease-out;
@@ -44,7 +44,7 @@
             padding-bottom: 20px;
             border-bottom: 2px solid #e0e0e0;
         }
-        .id-badge {
+        .title-badge {
             display: inline-block;
             background: #f0f0f0;
             color: #d32f2f;
@@ -82,22 +82,43 @@
             font-size: 15px;
             word-break: break-word;
             line-height: 1.5;
+            padding-left: 8px;
+        }
+        .divider {
+            height: 1px;
+            background: #f0f0f0;
+            margin: 16px 0;
+        }
+        .fotos-section {
+            margin: 24px 0;
         }
         .foto-container {
-            margin: 24px 0;
-            text-align: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 4px solid #d32f2f;
+        }
+        .foto-title {
+            font-weight: 600;
+            color: #d32f2f;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.3px;
         }
         .foto-link {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: #d32f2f;
             color: white;
             text-decoration: none;
             border-radius: 4px;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             transition: all 0.3s ease;
             letter-spacing: 0.3px;
+            margin-bottom: 8px;
         }
         .foto-link:hover {
             background: #b71c1c;
@@ -105,11 +126,15 @@
             box-shadow: 0 4px 8px rgba(211, 47, 47, 0.2);
         }
         .foto-preview {
-            margin-top: 12px;
+            margin-top: 10px;
             max-width: 100%;
-            max-height: 300px;
+            max-height: 280px;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .foto-preview.show {
+            display: block;
         }
         .footer {
             text-align: center;
@@ -119,59 +144,77 @@
             color: #9e9e9e;
             font-size: 12px;
         }
-        .divider {
-            height: 1px;
-            background: #f0f0f0;
-            margin: 16px 0;
+        .bl-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
         }
-        .icon {
-            width: 16px;
-            height: 16px;
-            display: inline-block;
+        .bl-box {
+            padding: 12px;
+            background: #fff3e0;
+            border-radius: 4px;
+            border-left: 3px solid #d32f2f;
+        }
+        .bl-label {
+            font-weight: 600;
+            color: #d32f2f;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            letter-spacing: 0.2px;
+        }
+        .bl-value {
+            color: #424242;
+            font-size: 14px;
+            font-weight: 500;
+            word-break: break-word;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="id-badge" id="id">ID: --</div>
-            <h1 class="nombre" id="nombre">--</h1>
+            <div class="title-badge">📦 Información de Embarque</div>
+            <h1 class="nombre" id="nombrePreparador">--</h1>
         </div>
 
         <div class="info-group">
-            <div class="label">📧 Correo Electrónico</div>
-            <div class="value" id="correoForm">--</div>
-        </div>
-
-        <div class="info-group">
-            <div class="label">📱 Teléfono</div>
-            <div class="value" id="telefono">--</div>
+            <div class="label">📍 Dirección del Cliente</div>
+            <div class="value" id="direccionCliente">--</div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="info-group">
-            <div class="label">⏰ Hora de Inicio</div>
-            <div class="value" id="horaInicio">--</div>
-        </div>
-
-        <div class="info-group">
-            <div class="label">⏹️ Hora de Finalización</div>
-            <div class="value" id="horaFin">--</div>
+        <div class="bl-info">
+            <div class="bl-box">
+                <div class="bl-label">🇲🇽 BL México</div>
+                <div class="bl-value" id="blMexico">--</div>
+            </div>
+            <div class="bl-box">
+                <div class="bl-label">🇨🇦 BL Canadá</div>
+                <div class="bl-value" id="blCanada">--</div>
+            </div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="info-group">
-            <div class="label">📝 Descripción</div>
-            <div class="value" id="descripcion">--</div>
-        </div>
+        <div class="fotos-section">
+            <div class="foto-container">
+                <div class="foto-title">📄 Foto BL</div>
+                <a href="#" id="fotoBLLink" class="foto-link" target="_blank" style="display: none;">
+                    Ver Imagen
+                </a>
+                <img id="fotoBLPreview" class="foto-preview" />
+            </div>
 
-        <div class="foto-container">
-            <a href="#" id="fotoLink" class="foto-link" target="_blank" style="display: none;">
-                📸 Ver Foto
-            </a>
-            <img id="fotoPreview" class="foto-preview" style="display: none;" />
+            <div class="foto-container">
+                <div class="foto-title">📸 Foto de Embarque</div>
+                <a href="#" id="fotoEmbarqueLink" class="foto-link" target="_blank" style="display: none;">
+                    Ver Imagen
+                </a>
+                <img id="fotoEmbarquePreview" class="foto-preview" />
+            </div>
         </div>
 
         <div class="footer">
@@ -189,26 +232,37 @@
             try {
                 const datos = JSON.parse(decodeURIComponent(datosStr));
                 
-                // Llenar los campos
-                document.getElementById('id').textContent = `ID: ${datos.id}`;
-                document.getElementById('nombre').textContent = datos.nombreCompleto || datos.nombre;
-                document.getElementById('correoForm').textContent = datos.correoForm || '--';
-                document.getElementById('telefono').textContent = datos.telefono || '--';
-                document.getElementById('horaInicio').textContent = datos.horaInicio || '--';
-                document.getElementById('horaFin').textContent = datos.horaFin || '--';
-                document.getElementById('descripcion').textContent = datos.descripcion || '--';
+                // Llenar los campos principales
+                document.getElementById('nombrePreparador').textContent = datos.nombrePreparador || '--';
+                document.getElementById('direccionCliente').textContent = datos.direccionCliente || '--';
+                document.getElementById('blMexico').textContent = datos.blMexico || '--';
+                document.getElementById('blCanada').textContent = datos.blCanada || '--';
                 
-                // Manejar la foto
-                if (datos.foto && datos.foto.trim() !== '') {
-                    document.getElementById('fotoLink').href = datos.foto;
-                    document.getElementById('fotoLink').style.display = 'inline-block';
+                // Manejar Foto BL
+                if (datos.fotoBL && datos.fotoBL.trim() !== '') {
+                    const fotoBLLink = document.getElementById('fotoBLLink');
+                    fotoBLLink.href = datos.fotoBL;
+                    fotoBLLink.style.display = 'inline-block';
                     
-                    // Intentar cargar la foto como preview
-                    const fotoPreview = document.getElementById('fotoPreview');
-                    fotoPreview.src = datos.foto;
-                    fotoPreview.style.display = 'block';
-                    fotoPreview.onerror = function() {
-                        fotoPreview.style.display = 'none';
+                    const fotoBLPreview = document.getElementById('fotoBLPreview');
+                    fotoBLPreview.src = datos.fotoBL;
+                    fotoBLPreview.classList.add('show');
+                    fotoBLPreview.onerror = function() {
+                        fotoBLPreview.classList.remove('show');
+                    };
+                }
+                
+                // Manejar Foto de Embarque
+                if (datos.fotoEmbarque && datos.fotoEmbarque.trim() !== '') {
+                    const fotoEmbarqueLink = document.getElementById('fotoEmbarqueLink');
+                    fotoEmbarqueLink.href = datos.fotoEmbarque;
+                    fotoEmbarqueLink.style.display = 'inline-block';
+                    
+                    const fotoEmbarquePreview = document.getElementById('fotoEmbarquePreview');
+                    fotoEmbarquePreview.src = datos.fotoEmbarque;
+                    fotoEmbarquePreview.classList.add('show');
+                    fotoEmbarquePreview.onerror = function() {
+                        fotoEmbarquePreview.classList.remove('show');
                     };
                 }
                 
