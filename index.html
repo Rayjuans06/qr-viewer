@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1000px;
+            max-width: 800px;
             margin: 20px auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -69,34 +69,14 @@
             border-radius: 5px;
             word-wrap: break-word;
         }
-        .foto-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .foto-card {
-            border: 2px solid #e0e0e0;
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
             border-radius: 8px;
-            overflow: hidden;
-        }
-        .foto-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-        .foto-card img:hover {
-            transform: scale(1.05);
-        }
-        .foto-label {
-            background: #0078d4;
-            color: white;
-            padding: 8px;
+            margin-top: 20px;
             text-align: center;
-            font-size: 12px;
-            font-weight: bold;
         }
         .error {
             background: #ff4444;
@@ -116,79 +96,65 @@
     <div id="contenido"></div>
 
     <script>
-        // Obtener parámetros de la URL
         const urlParams = new URLSearchParams(window.location.search);
-        const idUnico = urlParams.get('id');
+        const idUnico = urlParams.get('i');  // Cambiado de 'id' a 'i'
         const datosEncoded = urlParams.get('d');
 
         if (!datosEncoded) {
             document.getElementById('contenido').innerHTML = '<div class="error">❌ No se encontraron datos</div>';
         } else {
             try {
-                // Decodificar datos
                 const datosJSON = decodeURIComponent(datosEncoded);
                 const datos = JSON.parse(datosJSON);
 
-                // Mostrar ID y referencia
-                document.getElementById('idBadge').textContent = `Referencia: ${datos.ref || datos.id}`;
-                document.getElementById('countBadge').textContent = `${datos.count || 1} registro(s)`;
+                // Mostrar referencia y contador
+                document.getElementById('idBadge').textContent = `Referencia: ${datos.r || datos.i}`;
+                document.getElementById('countBadge').textContent = `${datos.c || datos.d.length} registro(s)`;
 
-                // Mapeo de nombres cortos a legibles
-                const campos = {
+                // Mapeo de códigos a nombres legibles
+                const nombresLegibles = {
                     np: 'Nombre del Preparador',
                     dc: 'Dirección del Cliente',
                     bm: 'BL México',
-                    bc: 'BL Canadá'
+                    bc: 'BL Canadá',
+                    fb: 'Foto BL',
+                    fe: 'Foto Embarque'
                 };
 
                 let html = '';
+                const fields = datos.f;  // Array con nombres de campos
+                const dataArray = datos.d;  // Array de arrays con valores
 
-                // Iterar sobre todos los registros
-                const items = datos.items || [datos];
-                items.forEach((registro, index) => {
+                // Iterar sobre cada registro
+                dataArray.forEach((valores, index) => {
                     html += `<div class="registro-card">`;
                     html += `<div class="registro-header">Registro ${index + 1}</div>`;
                     
-                    // Mostrar campos de texto
-                    for (let [key, label] of Object.entries(campos)) {
-                        if (registro[key]) {
+                    // Iterar sobre cada campo
+                    fields.forEach((fieldCode, fieldIndex) => {
+                        const valor = valores[fieldIndex];
+                        if (valor !== "" && valor !== null && valor !== undefined) {
+                            const label = nombresLegibles[fieldCode] || fieldCode;
                             html += `<div class="field">`;
                             html += `<div class="label">${label}</div>`;
-                            html += `<div class="value">${registro[key]}</div>`;
+                            html += `<div class="value">${valor}</div>`;
                             html += `</div>`;
                         }
-                    }
-                    
-                    // Mostrar fotos
-                    if (registro.fb || registro.fe) {
-                        html += `<div class="foto-container">`;
-                        
-                        if (registro.fb) {
-                            html += `<div class="foto-card">`;
-                            html += `<div class="foto-label">Foto BL</div>`;
-                            html += `<a href="${registro.fb}" target="_blank">`;
-                            html += `<img src="${registro.fb}" alt="Foto BL" loading="lazy">`;
-                            html += `</a></div>`;
-                        }
-                        
-                        if (registro.fe) {
-                            html += `<div class="foto-card">`;
-                            html += `<div class="foto-label">Foto Embarque</div>`;
-                            html += `<a href="${registro.fe}" target="_blank">`;
-                            html += `<img src="${registro.fe}" alt="Foto Embarque" loading="lazy">`;
-                            html += `</a></div>`;
-                        }
-                        
-                        html += `</div>`;
-                    }
+                    });
                     
                     html += `</div>`;
                 });
 
+                // Mensaje sobre fotos
+                html += `<div class="info-box">`;
+                html += `📸 <strong>Fotos disponibles</strong><br>`;
+                html += `Las imágenes de BL y embarque se encuentran almacenadas en el archivo de Excel/SharePoint original.`;
+                html += `</div>`;
+
                 document.getElementById('contenido').innerHTML = html;
 
             } catch (error) {
-                document.getElementById('contenido').innerHTML = `<div class="error">❌ Error al procesar datos: ${error.message}</div>`;
+                document.getElementById('contenido').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
             }
         }
     </script>
