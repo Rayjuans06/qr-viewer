@@ -3,57 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Datos QR</title>
+    <title>Visualizador de Datos QR - Embarques</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
+            max-width: 1000px;
+            margin: 20px auto;
             padding: 20px;
             background-color: #f5f5f5;
         }
-        .container {
-            background: white;
-            padding: 30px;
+        .header {
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+            color: white;
+            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .field {
             margin-bottom: 20px;
-        }
-        .label {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .value {
-            color: #666;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            margin-top: 10px;
-            border-radius: 5px;
+            text-align: center;
         }
         .id-badge {
             display: inline-block;
-            background: #0078d4;
-            color: white;
-            padding: 5px 15px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
             border-radius: 20px;
             font-weight: bold;
+            margin-top: 10px;
+        }
+        .count-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .registro-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border-left: 5px solid #0078d4;
+        }
+        .registro-header {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            margin: -25px -25px 20px -25px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            color: #333;
+        }
+        .field {
+            margin-bottom: 15px;
+        }
+        .label {
+            font-weight: bold;
+            color: #0078d4;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .value {
+            color: #333;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+        .foto-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .foto-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .foto-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .foto-card img:hover {
+            transform: scale(1.05);
+        }
+        .foto-label {
+            background: #0078d4;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
+        <h1>📦 Información de Embarque</h1>
         <div class="id-badge" id="idBadge"></div>
-        <div id="contenido"></div>
+        <span class="count-badge" id="countBadge"></span>
     </div>
+    <div id="contenido"></div>
 
     <script>
         // Obtener parámetros de la URL
@@ -62,51 +122,73 @@
         const datosEncoded = urlParams.get('d');
 
         if (!datosEncoded) {
-            document.getElementById('contenido').innerHTML = '<p style="color:red;">❌ No se encontraron datos</p>';
+            document.getElementById('contenido').innerHTML = '<div class="error">❌ No se encontraron datos</div>';
         } else {
             try {
                 // Decodificar datos
                 const datosJSON = decodeURIComponent(datosEncoded);
                 const datos = JSON.parse(datosJSON);
 
-                // Mostrar ID
-                document.getElementById('idBadge').textContent = `ID: ${datos.id || idUnico}`;
+                // Mostrar ID y referencia
+                document.getElementById('idBadge').textContent = `Referencia: ${datos.ref || datos.id}`;
+                document.getElementById('countBadge').textContent = `${datos.count || 1} registro(s)`;
 
                 // Mapeo de nombres cortos a legibles
                 const campos = {
                     np: 'Nombre del Preparador',
                     dc: 'Dirección del Cliente',
                     bm: 'BL México',
-                    bc: 'BL Canadá',
-                    fb: 'Foto BL',
-                    fe: 'Foto Embarque'
+                    bc: 'BL Canadá'
                 };
 
                 let html = '';
-                
-                for (let [key, label] of Object.entries(campos)) {
-                    if (datos[key]) {
-                        html += `<div class="field">`;
-                        html += `<div class="label">${label}:</div>`;
+
+                // Iterar sobre todos los registros
+                const items = datos.items || [datos];
+                items.forEach((registro, index) => {
+                    html += `<div class="registro-card">`;
+                    html += `<div class="registro-header">Registro ${index + 1}</div>`;
+                    
+                    // Mostrar campos de texto
+                    for (let [key, label] of Object.entries(campos)) {
+                        if (registro[key]) {
+                            html += `<div class="field">`;
+                            html += `<div class="label">${label}</div>`;
+                            html += `<div class="value">${registro[key]}</div>`;
+                            html += `</div>`;
+                        }
+                    }
+                    
+                    // Mostrar fotos
+                    if (registro.fb || registro.fe) {
+                        html += `<div class="foto-container">`;
                         
-                        // Si es una URL de imagen, mostrarla
-                        if (key === 'fb' || key === 'fe') {
-                            html += `<div class="value">
-                                <a href="${datos[key]}" target="_blank">Ver imagen</a>
-                                <img src="${datos[key]}" alt="${label}" loading="lazy">
-                            </div>`;
-                        } else {
-                            html += `<div class="value">${datos[key]}</div>`;
+                        if (registro.fb) {
+                            html += `<div class="foto-card">`;
+                            html += `<div class="foto-label">Foto BL</div>`;
+                            html += `<a href="${registro.fb}" target="_blank">`;
+                            html += `<img src="${registro.fb}" alt="Foto BL" loading="lazy">`;
+                            html += `</a></div>`;
+                        }
+                        
+                        if (registro.fe) {
+                            html += `<div class="foto-card">`;
+                            html += `<div class="foto-label">Foto Embarque</div>`;
+                            html += `<a href="${registro.fe}" target="_blank">`;
+                            html += `<img src="${registro.fe}" alt="Foto Embarque" loading="lazy">`;
+                            html += `</a></div>`;
                         }
                         
                         html += `</div>`;
                     }
-                }
+                    
+                    html += `</div>`;
+                });
 
                 document.getElementById('contenido').innerHTML = html;
 
             } catch (error) {
-                document.getElementById('contenido').innerHTML = `<p style="color:red;">❌ Error al procesar datos: ${error.message}</p>`;
+                document.getElementById('contenido').innerHTML = `<div class="error">❌ Error al procesar datos: ${error.message}</div>`;
             }
         }
     </script>
