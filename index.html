@@ -5,110 +5,238 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizador de Datos QR - Embarques</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .header {
-            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
-            color: white;
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 10px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             text-align: center;
         }
-        .id-badge {
+        
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
             display: inline-block;
-            background: rgba(255,255,255,0.2);
             padding: 8px 20px;
             border-radius: 20px;
             font-weight: bold;
-            margin-top: 10px;
+            font-size: 14px;
         }
-        .count-badge {
+        
+        .badge-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .badge-success {
             background: #28a745;
             color: white;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 14px;
-            margin-left: 10px;
         }
+        
         .registro-card {
             background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            border-left: 5px solid #0078d4;
+            animation: slideIn 0.5s ease-out;
         }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .registro-header {
-            background: #f0f0f0;
-            padding: 10px 15px;
-            margin: -25px -25px 20px -25px;
-            border-radius: 10px 10px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: -30px -30px 25px -30px;
+            border-radius: 15px 15px 0 0;
             font-weight: bold;
-            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
         .field {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+        
         .label {
-            font-weight: bold;
-            color: #0078d4;
-            margin-bottom: 5px;
-            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 13px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+        
         .value {
             color: #333;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
-            word-wrap: break-word;
-        }
-        .info-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 15px;
+            padding: 12px 15px;
+            background: #f8f9fa;
             border-radius: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 15px;
+        }
+        
+        .fotos-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .fotos-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .foto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .foto-placeholder {
+            border: 3px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        
+        .foto-placeholder:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .foto-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            filter: grayscale(50%);
+        }
+        
+        .foto-placeholder:hover .foto-icon {
+            filter: grayscale(0%);
+        }
+        
+        .foto-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .foto-description {
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 20px;
+            border-radius: 12px;
             margin-top: 20px;
             text-align: center;
+            line-height: 1.6;
         }
+        
+        .info-box strong {
+            color: #533903;
+        }
+        
         .error {
-            background: #ff4444;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             text-align: center;
+            font-size: 18px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #dee2e6, transparent);
+            margin: 30px 0;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📦 Información de Embarque</h1>
-        <div class="id-badge" id="idBadge"></div>
-        <span class="count-badge" id="countBadge"></span>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Información de Embarque</h1>
+            <div class="badges">
+                <span class="badge badge-primary" id="idBadge"></span>
+                <span class="badge badge-success" id="countBadge"></span>
+            </div>
+        </div>
+        <div id="contenido"></div>
     </div>
-    <div id="contenido"></div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const idUnico = urlParams.get('i');  // Cambiado de 'id' a 'i'
+        const idUnico = urlParams.get('i');
         const datosEncoded = urlParams.get('d');
 
         if (!datosEncoded) {
-            document.getElementById('contenido').innerHTML = '<div class="error">❌ No se encontraron datos</div>';
+            document.getElementById('contenido').innerHTML = '<div class="error">❌ No se encontraron datos en el código QR</div>';
         } else {
             try {
                 const datosJSON = decodeURIComponent(datosEncoded);
                 const datos = JSON.parse(datosJSON);
 
                 // Mostrar referencia y contador
-                document.getElementById('idBadge').textContent = `Referencia: ${datos.r || datos.i}`;
+                document.getElementById('idBadge').textContent = `ID: ${datos.r || datos.i}`;
                 document.getElementById('countBadge').textContent = `${datos.c || datos.d.length} registro(s)`;
 
                 // Mapeo de códigos a nombres legibles
@@ -116,45 +244,83 @@
                     np: 'Nombre del Preparador',
                     dc: 'Dirección del Cliente',
                     bm: 'BL México',
-                    bc: 'BL Canadá',
-                    fb: 'Foto BL',
-                    fe: 'Foto Embarque'
+                    bc: 'BL Canadá'
+                };
+
+                // Iconos para cada campo
+                const iconos = {
+                    np: '👤',
+                    dc: '📍',
+                    bm: '🇲🇽',
+                    bc: '🇨🇦'
                 };
 
                 let html = '';
-                const fields = datos.f;  // Array con nombres de campos
-                const dataArray = datos.d;  // Array de arrays con valores
+                const fields = datos.f;
+                const dataArray = datos.d;
 
                 // Iterar sobre cada registro
                 dataArray.forEach((valores, index) => {
                     html += `<div class="registro-card">`;
-                    html += `<div class="registro-header">Registro ${index + 1}</div>`;
+                    html += `<div class="registro-header">`;
+                    html += `📋 Registro ${index + 1} de ${dataArray.length}`;
+                    html += `</div>`;
                     
                     // Iterar sobre cada campo
                     fields.forEach((fieldCode, fieldIndex) => {
                         const valor = valores[fieldIndex];
                         if (valor !== "" && valor !== null && valor !== undefined) {
                             const label = nombresLegibles[fieldCode] || fieldCode;
+                            const icono = iconos[fieldCode] || '📌';
+                            
                             html += `<div class="field">`;
-                            html += `<div class="label">${label}</div>`;
+                            html += `<div class="label">${icono} ${label}</div>`;
                             html += `<div class="value">${valor}</div>`;
                             html += `</div>`;
                         }
                     });
                     
+                    // ===== SECCIÓN DE FOTOS CON PLACEHOLDERS =====
+                    html += `<div class="fotos-section">`;
+                    html += `<div class="fotos-title">📸 Fotografías del Embarque</div>`;
+                    html += `<div class="foto-grid">`;
+                    
+                    // Placeholder para Foto BL
+                    html += `<div class="foto-placeholder">`;
+                    html += `<div class="foto-icon">📄</div>`;
+                    html += `<div class="foto-label">Foto BL</div>`;
+                    html += `<div class="foto-description">Documento de embarque<br>disponible en el archivo Excel</div>`;
                     html += `</div>`;
+                    
+                    // Placeholder para Foto Embarque
+                    html += `<div class="foto-placeholder">`;
+                    html += `<div class="foto-icon">📦</div>`;
+                    html += `<div class="foto-label">Foto Embarque</div>`;
+                    html += `<div class="foto-description">Imagen del paquete<br>disponible en el archivo Excel</div>`;
+                    html += `</div>`;
+                    
+                    html += `</div>`;
+                    html += `</div>`;
+                    
+                    html += `</div>`;
+                    
+                    // Separador entre registros (excepto el último)
+                    if (index < dataArray.length - 1) {
+                        html += `<div class="divider"></div>`;
+                    }
                 });
 
-                // Mensaje sobre fotos
+                // Mensaje informativo
                 html += `<div class="info-box">`;
-                html += `📸 <strong>Fotos disponibles</strong><br>`;
-                html += `Las imágenes de BL y embarque se encuentran almacenadas en el archivo de Excel/SharePoint original.`;
+                html += `<strong>ℹ️ Información sobre las fotografías</strong><br>`;
+                html += `Las imágenes de BL y embarque están almacenadas de forma segura en el archivo de Excel/SharePoint.<br>`;
+                html += `<strong>Referencia del embarque: ${datos.r}</strong>`;
                 html += `</div>`;
 
                 document.getElementById('contenido').innerHTML = html;
 
             } catch (error) {
-                document.getElementById('contenido').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                document.getElementById('contenido').innerHTML = `<div class="error">❌ Error al procesar los datos: ${error.message}</div>`;
             }
         }
     </script>
