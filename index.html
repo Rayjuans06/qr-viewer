@@ -1,328 +1,93 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Datos QR - Embarques</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 15px;
-        }
-        
-        .badges {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .badge-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .badge-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .registro-card {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .registro-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            margin: -30px -30px 25px -30px;
-            border-radius: 15px 15px 0 0;
-            font-weight: bold;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .field {
-            margin-bottom: 20px;
-        }
-        
-        .label {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 8px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .value {
-            color: #333;
-            padding: 12px 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 3px solid #667eea;
-            font-size: 15px;
-        }
-        
-        .fotos-section {
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 2px solid #f0f0f0;
-        }
-        
-        .fotos-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .foto-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .foto-placeholder {
-            border: 3px dashed #dee2e6;
-            border-radius: 12px;
-            padding: 30px 20px;
-            text-align: center;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            transition: all 0.3s ease;
-            cursor: default;
-        }
-        
-        .foto-placeholder:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
-        }
-        
-        .foto-icon {
-            font-size: 64px;
-            margin-bottom: 15px;
-            filter: grayscale(50%);
-        }
-        
-        .foto-placeholder:hover .foto-icon {
-            filter: grayscale(0%);
-        }
-        
-        .foto-label {
-            font-weight: bold;
-            color: #495057;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        
-        .foto-description {
-            font-size: 13px;
-            color: #6c757d;
-            line-height: 1.5;
-        }
-        
-        .info-box {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            border: 2px solid #ffc107;
-            color: #856404;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            text-align: center;
-            line-height: 1.6;
-        }
-        
-        .info-box strong {
-            color: #533903;
-        }
-        
-        .error {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            font-size: 18px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        
-        .divider {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #dee2e6, transparent);
-            margin: 30px 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📦 Información de Embarque</h1>
-            <div class="badges">
-                <span class="badge badge-primary" id="idBadge"></span>
-                <span class="badge badge-success" id="countBadge"></span>
-            </div>
-        </div>
-        <div id="contenido"></div>
-    </div>
+function main(workbook: ExcelScript.Workbook) {
+  let table: ExcelScript.Table = workbook.getTable("OfficeForms.Table");
+  let dataBodyRange: ExcelScript.Range = table.getRangeBetweenHeaderAndTotal();
+  let lastRow: ExcelScript.Range = dataBodyRange.getLastRow();
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const idUnico = urlParams.get('i');
-        const datosEncoded = urlParams.get('d');
+  // Calcular últimas 15 filas
+  let lastRowNumber: number = lastRow.getRowIndex() + lastRow.getRowCount();
+  let firstRowToCheck: number = Math.max(0, lastRowNumber - 15);
 
-        if (!datosEncoded) {
-            document.getElementById('contenido').innerHTML = '<div class="error">❌ No se encontraron datos en el código QR</div>';
-        } else {
-            try {
-                const datosJSON = decodeURIComponent(datosEncoded);
-                const datos = JSON.parse(datosJSON);
+  // Array para evitar procesar el mismo ID múltiples veces
+  let valoresAProcesados: string[] = [];
 
-                // Mostrar referencia y contador
-                document.getElementById('idBadge').textContent = `ID: ${datos.r || datos.i}`;
-                document.getElementById('countBadge').textContent = `${datos.c || datos.d.length} registro(s)`;
+  try {
+    // Recorrer últimas 15 filas
+    for (let i: number = firstRowToCheck; i < lastRowNumber; i++) {
+      let row: ExcelScript.Range = dataBodyRange.getRow(i - firstRowToCheck);
 
-                // Mapeo de códigos a nombres legibles
-                const nombresLegibles = {
-                    np: 'Nombre del Preparador',
-                    dc: 'Dirección del Cliente',
-                    bm: 'BL México',
-                    bc: 'BL Canadá'
-                };
+      // Verificar si la columna L (URL_QR) está vacía
+      let urlQR: string | number = row.getCell(0, 11).getValue() as string | number;
 
-                // Iconos para cada campo
-                const iconos = {
-                    np: '👤',
-                    dc: '📍',
-                    bm: '🇲🇽',
-                    bc: '🇨🇦'
-                };
+      if (urlQR === "" || urlQR === null || urlQR === undefined) {
+        // Obtener valor de columna A
+        let valorColumnaA: string = row.getCell(0, 0).getValue().toString();
 
-                let html = '';
-                const fields = datos.f;
-                const dataArray = datos.d;
-
-                // Iterar sobre cada registro
-                dataArray.forEach((valores, index) => {
-                    html += `<div class="registro-card">`;
-                    html += `<div class="registro-header">`;
-                    html += `📋 Registro ${index + 1} de ${dataArray.length}`;
-                    html += `</div>`;
-                    
-                    // Iterar sobre cada campo
-                    fields.forEach((fieldCode, fieldIndex) => {
-                        const valor = valores[fieldIndex];
-                        if (valor !== "" && valor !== null && valor !== undefined) {
-                            const label = nombresLegibles[fieldCode] || fieldCode;
-                            const icono = iconos[fieldCode] || '📌';
-                            
-                            html += `<div class="field">`;
-                            html += `<div class="label">${icono} ${label}</div>`;
-                            html += `<div class="value">${valor}</div>`;
-                            html += `</div>`;
-                        }
-                    });
-                    
-                    // ===== SECCIÓN DE FOTOS CON PLACEHOLDERS =====
-                    html += `<div class="fotos-section">`;
-                    html += `<div class="fotos-title">📸 Fotografías del Embarque</div>`;
-                    html += `<div class="foto-grid">`;
-                    
-                    // Placeholder para Foto BL
-                    html += `<div class="foto-placeholder">`;
-                    html += `<div class="foto-icon">📄</div>`;
-                    html += `<div class="foto-label">Foto BL</div>`;
-                    html += `<div class="foto-description">Documento de embarque<br>disponible en el archivo Excel</div>`;
-                    html += `</div>`;
-                    
-                    // Placeholder para Foto Embarque
-                    html += `<div class="foto-placeholder">`;
-                    html += `<div class="foto-icon">📦</div>`;
-                    html += `<div class="foto-label">Foto Embarque</div>`;
-                    html += `<div class="foto-description">Imagen del paquete<br>disponible en el archivo Excel</div>`;
-                    html += `</div>`;
-                    
-                    html += `</div>`;
-                    html += `</div>`;
-                    
-                    html += `</div>`;
-                    
-                    // Separador entre registros (excepto el último)
-                    if (index < dataArray.length - 1) {
-                        html += `<div class="divider"></div>`;
-                    }
-                });
-
-                // Mensaje informativo
-                html += `<div class="info-box">`;
-                html += `<strong>ℹ️ Información sobre las fotografías</strong><br>`;
-                html += `Las imágenes de BL y embarque están almacenadas de forma segura en el archivo de Excel/SharePoint.<br>`;
-                html += `<strong>Referencia del embarque: ${datos.r}</strong>`;
-                html += `</div>`;
-
-                document.getElementById('contenido').innerHTML = html;
-
-            } catch (error) {
-                document.getElementById('contenido').innerHTML = `<div class="error">❌ Error al procesar los datos: ${error.message}</div>`;
-            }
+        // Evitar procesar el mismo ID múltiples veces
+        if (valoresAProcesados.indexOf(valorColumnaA) !== -1) {
+          continue;
         }
-    </script>
-</body>
-</html>
+
+        valoresAProcesados.push(valorColumnaA);
+
+        // Buscar TODOS los registros con el mismo ID
+        let registrosArray: (string | number)[][] = [];
+        let totalRows: number = dataBodyRange.getRowCount();
+
+        for (let j: number = 0; j < totalRows; j++) {
+          let currentRow: ExcelScript.Range = dataBodyRange.getRow(j);
+          let currentValorA: string = currentRow.getCell(0, 0).getValue().toString();
+
+          if (currentValorA === valorColumnaA) {
+            let np: string | number = currentRow.getCell(0, 5).getValue() as string | number;
+            let dc: string | number = currentRow.getCell(0, 6).getValue() as string | number;
+            let bm: string | number = currentRow.getCell(0, 7).getValue() as string | number;
+            let bc: string | number = currentRow.getCell(0, 8).getValue() as string | number;
+            let fb: string | number = currentRow.getCell(0, 9).getValue() as string | number;
+            let fe: string | number = currentRow.getCell(0, 10).getValue() as string | number;
+
+            let valores: (string | number)[] = [np, dc, bm, bc, fb, fe];
+            registrosArray.push(valores);
+          }
+        }
+
+        // Generar ID único
+        let timestamp: number = new Date().getTime();
+        let random: number = Math.floor(Math.random() * 1000);
+        let idUnico: string = `${valorColumnaA}_${timestamp.toString().slice(-6)}${random}`;
+
+        // Crear estructura compacta
+        let datosComprimidos: object = {
+          i: idUnico,
+          r: valorColumnaA,
+          c: registrosArray.length,
+          f: ["np", "dc", "bm", "bc", "fb", "fe"],
+          d: registrosArray
+        };
+
+        let datosJSON: string = JSON.stringify(datosComprimidos);
+        let datosEncoded: string = encodeURIComponent(datosJSON);
+        let urlVisual: string = `https://rayjuans06.github.io/qr-viewer?i=${idUnico}&d=${datosEncoded}`;
+        
+        // Generar QR más grande
+        let qrUrl: string = `https://api.qrserver.com/v1/create-qr-code/?size=800x800&data=${encodeURIComponent(urlVisual)}`;
+
+        // Actualizar TODAS las filas con ese ID
+        for (let j: number = 0; j < totalRows; j++) {
+          let currentRow: ExcelScript.Range = dataBodyRange.getRow(j);
+          let currentValorA: string = currentRow.getCell(0, 0).getValue().toString();
+
+          if (currentValorA === valorColumnaA) {
+            currentRow.getCell(0, 11).setValue(qrUrl);
+            currentRow.getCell(0, 12).setValue(datosJSON);
+            currentRow.getCell(0, 13).setValue(idUnico);
+            currentRow.getCell(0, 14).setValue(urlVisual);
+          }
+        }
+      }
+    }
+
+  } catch (error) {
+    let ws: ExcelScript.Worksheet = workbook.getActiveWorksheet();
+    ws.getCell(0, 0).setValue("ERROR: " + error);
+  }
+}
