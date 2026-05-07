@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visor de Embarque - LAUAK</title>
+    <title>Embarque - LAUAK</title>
     <style>
         * {
             margin: 0;
@@ -18,7 +18,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -29,55 +29,60 @@
         .header {
             background: linear-gradient(135deg, #DC143C 0%, #A01020 100%);
             color: white;
-            padding: 30px;
+            padding: 25px;
             text-align: center;
         }
         
         .header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: 28px;
+            margin-bottom: 5px;
         }
         
         .info {
-            padding: 30px;
+            padding: 25px;
         }
         
         .shipment-info {
             background: #f9f9f9;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            text-align: center;
         }
         
         .shipment-info h2 {
             color: #DC143C;
-            margin-bottom: 10px;
+            font-size: 32px;
+            margin-bottom: 5px;
         }
         
         .registro {
             background: white;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
         
-        .registro h3 {
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #DC143C;
+        .registro-header {
+            background: #DC143C;
+            color: white;
+            padding: 10px;
+            margin: -15px -15px 15px -15px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 6px 6px 0 0;
         }
         
         .campo {
             display: grid;
-            grid-template-columns: 200px 1fr;
+            grid-template-columns: 150px 1fr;
             gap: 10px;
-            margin-bottom: 10px;
-            padding: 8px;
+            padding: 10px;
+            margin-bottom: 5px;
         }
         
-        .campo:nth-child(even) {
+        .campo:nth-child(odd) {
             background: #f9f9f9;
         }
         
@@ -88,13 +93,26 @@
         
         .campo-valor {
             color: #333;
+            font-weight: 500;
         }
         
-        .fotos {
+        .fotos-embarque {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .fotos-embarque h3 {
+            text-align: center;
+            color: #DC143C;
+            margin-bottom: 20px;
+        }
+        
+        .fotos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-top: 20px;
         }
         
         .foto {
@@ -106,12 +124,18 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .foto img:hover {
+            transform: scale(1.05);
         }
         
         .foto p {
             margin-top: 10px;
             font-weight: 600;
             color: #666;
+            font-size: 14px;
         }
         
         .error {
@@ -126,6 +150,10 @@
             }
             
             .header h1 {
+                font-size: 22px;
+            }
+            
+            .shipment-info h2 {
                 font-size: 24px;
             }
         }
@@ -134,8 +162,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📦 Visor de Embarque</h1>
-            <p>Sistema LAUAK SARL</p>
+            <h1>📦 Embarque LAUAK</h1>
         </div>
         
         <div id="content" class="info">
@@ -144,24 +171,7 @@
     </div>
 
     <script>
-        // Diccionario de campos comprimidos
-        const CAMPOS = {
-            p: 'PART NUMBER',
-            l: 'LOT PAR',
-            q: 'QTY',
-            m: 'DELIVERY MX',
-            c: 'DELIVERY CAN/FRA',
-            o: 'PO',
-            u: 'USER',
-            k: 'CUSTOMER',
-            e: 'CLAVE EMBALAJE',
-            w: 'PESO',
-            s: 'SERVICE',
-            b: 'Foto BL',
-            f: 'Foto Embarque'
-        };
-
-        // Base URL de SharePoint (común para todas las fotos)
+        // URLs base de SharePoint
         const SHAREPOINT_BASE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/%F0%9F%93%A6%20Registro%20de%20Embarques/Pregunta/';
         const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/%F0%9F%93%A6%20Registro%20de%20Embarques/Pregunta%201/';
 
@@ -170,12 +180,7 @@
             const dataParam = urlParams.get('d');
             
             if (!dataParam) {
-                // Fallback para formato antiguo
-                const dataOld = urlParams.get('data');
-                if (dataOld) {
-                    return JSON.parse(decodeURIComponent(dataOld));
-                }
-                throw new Error('No se encontraron datos');
+                throw new Error('No se encontraron datos en el QR');
             }
             
             // Decodificar Base64
@@ -195,64 +200,79 @@
             let html = `
                 <div class="shipment-info">
                     <h2>Embarque #${datos.i}</h2>
-                    <p><strong>Total de registros:</strong> ${datos.c}</p>
+                    <p style="color: #666; margin-top: 5px;">
+                        <strong>${datos.c}</strong> ${datos.c === 1 ? 'registro' : 'registros'}
+                    </p>
                 </div>
             `;
             
-            datos.d.forEach((registro, index) => {
+            // Mostrar cada registro
+            datos.d.forEach((reg, index) => {
                 html += `
                     <div class="registro">
-                        <h3>Registro ${index + 1}</h3>
-                `;
-                
-                // Mostrar campos
-                for (let [key, valor] of Object.entries(registro)) {
-                    if (key === 'b' || key === 'f') continue; // Fotos se muestran aparte
-                    
-                    const label = CAMPOS[key] || key;
-                    html += `
+                        <div class="registro-header">Registro ${index + 1}</div>
                         <div class="campo">
-                            <div class="campo-label">${label}:</div>
-                            <div class="campo-valor">${valor || 'N/A'}</div>
+                            <div class="campo-label">PART NUMBER:</div>
+                            <div class="campo-valor">${reg.p || 'N/A'}</div>
+                        </div>
+                        <div class="campo">
+                            <div class="campo-label">LOT PAR:</div>
+                            <div class="campo-valor">${reg.l || 'N/A'}</div>
+                        </div>
+                        <div class="campo">
+                            <div class="campo-label">QTY:</div>
+                            <div class="campo-valor">${reg.q || 'N/A'}</div>
+                        </div>
+                        <div class="campo">
+                            <div class="campo-label">DELIVERY MX:</div>
+                            <div class="campo-valor">${reg.m || 'N/A'}</div>
+                        </div>
+                        <div class="campo">
+                            <div class="campo-label">DELIVERY CAN/FRA:</div>
+                            <div class="campo-valor">${reg.c || 'N/A'}</div>
+                        </div>
+                        <div class="campo">
+                            <div class="campo-label">PO:</div>
+                            <div class="campo-valor">${reg.o || 'N/A'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Fotos del embarque (solo 1 de cada tipo)
+            const fotoBL = reconstruirURLFoto(datos.b, 'b');
+            const fotoEmbarque = reconstruirURLFoto(datos.f, 'f');
+            
+            if (fotoBL || fotoEmbarque) {
+                html += '<div class="fotos-embarque">';
+                html += '<h3>📸 Fotos del Embarque</h3>';
+                html += '<div class="fotos-grid">';
+                
+                if (fotoBL) {
+                    html += `
+                        <div class="foto">
+                            <img src="${fotoBL}" alt="Foto BL" onclick="window.open('${fotoBL}', '_blank')">
+                            <p>📄 Bill of Lading</p>
                         </div>
                     `;
                 }
                 
-                // Fotos
-                const fotoBL = reconstruirURLFoto(registro.b, 'b');
-                const fotoEmbarque = reconstruirURLFoto(registro.f, 'f');
-                
-                if (fotoBL || fotoEmbarque) {
-                    html += '<div class="fotos">';
-                    
-                    if (fotoBL) {
-                        html += `
-                            <div class="foto">
-                                <img src="${fotoBL}" alt="Foto BL" onclick="window.open('${fotoBL}', '_blank')">
-                                <p>📄 Foto BL</p>
-                            </div>
-                        `;
-                    }
-                    
-                    if (fotoEmbarque) {
-                        html += `
-                            <div class="foto">
-                                <img src="${fotoEmbarque}" alt="Foto Embarque" onclick="window.open('${fotoEmbarque}', '_blank')">
-                                <p>📦 Foto Embarque</p>
-                            </div>
-                        `;
-                    }
-                    
-                    html += '</div>';
+                if (fotoEmbarque) {
+                    html += `
+                        <div class="foto">
+                            <img src="${fotoEmbarque}" alt="Foto Embarque" onclick="window.open('${fotoEmbarque}', '_blank')">
+                            <p>📦 Foto Embarque</p>
+                        </div>
+                    `;
                 }
                 
-                html += '</div>';
-            });
+                html += '</div></div>';
+            }
             
             content.innerHTML = html;
         }
 
-        // Cargar datos al iniciar
+        // Cargar datos
         try {
             const datos = decodificarDatos();
             mostrarDatos(datos);
@@ -261,7 +281,9 @@
                 <div class="error">
                     <h2>❌ Error</h2>
                     <p>${error.message}</p>
-                    <p>Por favor, escanea un código QR válido.</p>
+                    <p style="margin-top: 10px; color: #666;">
+                        Por favor, escanea un código QR válido.
+                    </p>
                 </div>
             `;
         }
