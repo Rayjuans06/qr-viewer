@@ -132,6 +132,12 @@
             padding: 20px;
         }
 
+        .photo-error {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
         .table-container {
             background: white;
             border-radius: 15px;
@@ -175,7 +181,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* Modal para ver fotos en grande */
         .modal {
             display: none;
             position: fixed;
@@ -231,7 +236,6 @@
 <body>
     <div class="container" id="content"></div>
 
-    <!-- Modal para ver fotos -->
     <div id="photoModal" class="modal">
         <span class="close">&times;</span>
         <img class="modal-content" id="modalImg">
@@ -264,8 +268,29 @@
 
         function getPhotoUrl(filename) {
             if (!filename) return null;
-            // Construir URL completa de la foto
-            return `https://forms.office.com/FormSvr.aspx?id=bM-I8s2W3EmvjU4mvk_hNfAlBh9yKM9JvhMw76aZ_n9UNUwzWFVBWEpPQ1JQMUNXOVBHM1EzNTMxUiQlQCN0PWcu&target=${filename}_Juan%20RAYMUNDO.jpg`;
+            
+            // Si ya es una URL completa, usarla directamente
+            if (filename.startsWith('http')) {
+                return filename;
+            }
+            
+            // Construir URL para Microsoft Forms
+            // Formato: https://forms.office.com/FormSvr.aspx?id=FORM_ID&target=FILENAME
+            const formId = 'bM-I8s2W3EmvjU4mvk_hNfAlBh9yKM9JvhMw76aZ_n9UNUwzWFVBWEpPQ1JQMUNXOVBHM1EzNTMxUiQlQCN0PWcu';
+            
+            // Intentar diferentes formatos de nombre de archivo
+            const possibleExtensions = ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG'];
+            const possibleSuffixes = ['_Juan%20RAYMUNDO', '_Juan RAYMUNDO', ''];
+            
+            // Retornar un objeto con múltiples URLs para intentar
+            return {
+                urls: possibleExtensions.flatMap(ext => 
+                    possibleSuffixes.map(suffix => 
+                        `https://forms.office.com/FormSvr.aspx?id=${formId}&target=${encodeURIComponent(filename + suffix + ext)}`
+                    )
+                ),
+                fallback: `https://via.placeholder.com/400x300/667eea/ffffff?text=${encodeURIComponent('Foto: ' + filename)}`
+            };
         }
 
         function renderPhotos(data) {
@@ -278,15 +303,21 @@
 
                 // Foto BL
                 if (data.b) {
-                    const urlBL = getPhotoUrl(data.b);
+                    const photoUrls = getPhotoUrl(data.b);
                     html += `
                         <div class="photo-card">
                             <div class="photo-label">📄 Foto BL</div>
-                            <img src="${urlBL}" 
+                            <img src="${photoUrls.urls[0]}" 
                                  alt="Foto BL" 
                                  class="photo-img" 
+                                 data-urls='${JSON.stringify(photoUrls.urls)}'
+                                 data-fallback="${photoUrls.fallback}"
+                                 data-filename="${data.b}"
                                  onclick="openModal(this.src)"
-                                 onerror="this.parentElement.innerHTML='<div class=photo-placeholder>❌ Imagen no disponible</div>'">
+                                 onerror="tryNextUrl(this)">
+                            <div class="photo-error" style="display:none;">
+                                Archivo: ${data.b}
+                            </div>
                         </div>
                     `;
                 } else {
@@ -300,15 +331,21 @@
 
                 // Foto Embarque
                 if (data.f) {
-                    const urlEmb = getPhotoUrl(data.f);
+                    const photoUrls = getPhotoUrl(data.f);
                     html += `
                         <div class="photo-card">
                             <div class="photo-label">🚚 Foto Embarque</div>
-                            <img src="${urlEmb}" 
+                            <img src="${photoUrls.urls[0]}" 
                                  alt="Foto Embarque" 
                                  class="photo-img" 
+                                 data-urls='${JSON.stringify(photoUrls.urls)}'
+                                 data-fallback="${photoUrls.fallback}"
+                                 data-filename="${data.f}"
                                  onclick="openModal(this.src)"
-                                 onerror="this.parentElement.innerHTML='<div class=photo-placeholder>❌ Imagen no disponible</div>'">
+                                 onerror="tryNextUrl(this)">
+                            <div class="photo-error" style="display:none;">
+                                Archivo: ${data.f}
+                            </div>
                         </div>
                     `;
                 } else {
@@ -326,14 +363,34 @@
             return html;
         }
 
+        function tryNextUrl(imgElement) {
+            const urls = JSON.parse(imgElement.getAttribute('data-urls') || '[]');
+            const fallback = imgElement.getAttribute('data-fallback');
+            const filename = imgElement.getAttribute('data-filename');
+            
+            // Obtener el índice actual
+            let currentIndex = parseInt(imgElement.getAttribute('data-current-index') || '0');
+            currentIndex++;
+            
+            if (currentIndex < urls.length) {
+                // Intentar con la siguiente URL
+                imgElement.setAttribute('data-current-index', currentIndex);
+                imgElement.src = urls[currentIndex];
+                console.log(`Intentando URL ${currentIndex + 1}/${urls.length} para ${filename}`);
+            } else {
+                // Todas las URLs fallaron, mostrar fallback
+                console.error(`Todas las URLs fallaron para: ${filename}`);
+                imgElement.src = fallback;
+                imgElement.parentElement.querySelector('.photo-error').style.display = 'block';
+            }
+        }
+
         function renderData(data) {
             let html = '';
 
-            // Header con SHIPMENT NUMBER completo
             html += '<div class="header">';
-            html += `<div class="shipment-title">📦 EMBARQUE #${data.i}</div>`;
+            html += `<div class="shipment-title">📦 EMBARQUE ${data.i}</div>`;
             
-            // Info grid
             html += '<div class="info-grid">';
             html += `
                 <div class="info-item">
@@ -346,7 +403,6 @@
                 </div>
             `;
 
-            // Mostrar advertencia si hay múltiples partes
             if (data.pts > 1) {
                 html += `
                     <div class="info-item" style="grid-column: 1 / -1;">
@@ -358,7 +414,6 @@
 
             html += '</div></div>';
 
-            // Advertencia si es parte múltiple
             if (data.pts > 1) {
                 html += `
                     <div class="warning">
@@ -368,10 +423,8 @@
                 `;
             }
 
-            // Fotos
             html += renderPhotos(data);
 
-            // Tabla de productos
             html += '<div class="table-container">';
             html += '<table>';
             html += `
@@ -408,7 +461,6 @@
             document.getElementById('content').innerHTML = html;
         }
 
-        // Modal de fotos
         function openModal(src) {
             const modal = document.getElementById('photoModal');
             const modalImg = document.getElementById('modalImg');
@@ -416,7 +468,6 @@
             modalImg.src = src;
         }
 
-        // Cerrar modal
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('photoModal');
             const span = document.getElementsByClassName('close')[0];
@@ -432,7 +483,6 @@
             }
         });
 
-        // Cargar datos
         const encodedData = getQueryParam('d');
         if (!encodedData) {
             renderError('No se proporcionaron datos. Por favor, escanea un código QR válido.');
@@ -441,6 +491,7 @@
             if (!data) {
                 renderError('Los datos no se pudieron decodificar. Código QR inválido.');
             } else {
+                console.log('Datos decodificados:', data);
                 renderData(data);
             }
         }
