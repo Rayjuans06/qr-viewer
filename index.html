@@ -138,11 +138,9 @@
     </div>
 
     <script>
-        const SHAREPOINT_BASE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta/';
-        
-        const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Foto%20BL/';
+        // URL base solo para Foto Embarque (Foto BL viene completa)
+        const SHAREPOINT_BASE_EMBARQUE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Foto%20BL/';
 
-        // ✅ Array de extensiones para probar
         const EXTENSIONES = ['.jpeg', '.jpg', '.png', '.JPEG', '.JPG', '.PNG'];
 
         function decodificarDatos() {
@@ -157,18 +155,23 @@
             return JSON.parse(json);
         }
 
-        function obtenerURLsAlternativas(codigo, tipo) {
-            if (!codigo) return [];
+        function obtenerURLsFoto(dato, tipo) {
+            // Si 'dato' es una URL completa, usarla directamente
+            if (dato && dato.startsWith('http')) {
+                console.log(`✅ ${tipo}: URL completa recibida`);
+                return [dato];
+            }
             
-            const base = tipo === 'b' ? SHAREPOINT_BASE : SHAREPOINT_BASE_2;
+            // Si es un código, reconstruir URL
+            if (dato && tipo === 'Embarque') {
+                return EXTENSIONES.map(ext => `${SHAREPOINT_BASE_EMBARQUE}${dato}${ext}`);
+            }
             
-            // Generar URLs con todas las extensiones posibles
-            return EXTENSIONES.map(ext => `${base}${codigo}${ext}`);
+            return [];
         }
 
         function intentarCargarImagen(imgElement, urls, index = 0) {
             if (index >= urls.length) {
-                // Todas las URLs fallaron
                 const tipo = imgElement.dataset.tipo;
                 console.error(`❌ Todas las URLs fallaron para foto ${tipo}`);
                 imgElement.parentElement.innerHTML = `
@@ -181,10 +184,10 @@
             }
 
             const url = urls[index];
-            console.log(`🔄 Intentando cargar (${index + 1}/${urls.length}):`, url);
+            console.log(`🔄 Intentando cargar ${imgElement.dataset.tipo} (${index + 1}/${urls.length}):`, url);
             
             imgElement.onerror = () => intentarCargarImagen(imgElement, urls, index + 1);
-            imgElement.onload = () => console.log(`✅ Foto cargada exitosamente:`, url);
+            imgElement.onload = () => console.log(`✅ Foto ${imgElement.dataset.tipo} cargada exitosamente`);
             imgElement.src = url;
         }
 
@@ -192,8 +195,8 @@
             const content = document.getElementById('content');
             
             console.log('📦 Datos completos:', datos);
-            console.log('📸 Código foto BL:', datos.b);
-            console.log('📸 Código foto Embarque:', datos.f);
+            console.log('📸 Foto BL:', datos.b);
+            console.log('📸 Foto Embarque:', datos.f);
             
             let html = '';
             
@@ -298,19 +301,17 @@
             
             content.innerHTML = html;
 
-            // Cargar fotos con sistema de fallback
+            // Cargar fotos
             if (datos.b) {
                 const imgBL = document.getElementById('fotoBL');
-                const urlsBL = obtenerURLsAlternativas(datos.b, 'b');
-                console.log(`📋 URLs a probar para foto BL (${urlsBL.length}):`, urlsBL);
+                const urlsBL = obtenerURLsFoto(datos.b, 'BL');
                 imgBL.onclick = () => window.open(imgBL.src, '_blank');
                 intentarCargarImagen(imgBL, urlsBL);
             }
             
             if (datos.f) {
                 const imgEmb = document.getElementById('fotoEmbarque');
-                const urlsEmb = obtenerURLsAlternativas(datos.f, 'f');
-                console.log(`📋 URLs a probar para foto Embarque (${urlsEmb.length}):`, urlsEmb);
+                const urlsEmb = obtenerURLsFoto(datos.f, 'Embarque');
                 imgEmb.onclick = () => window.open(imgEmb.src, '_blank');
                 intentarCargarImagen(imgEmb, urlsEmb);
             }
