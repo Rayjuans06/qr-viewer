@@ -138,8 +138,10 @@
     </div>
 
     <script>
-        const SHAREPOINT_BASE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/%F0%9F%93%A6%20Registro%20de%20Embarques/Pregunta/';
-        const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/%F0%9F%93%A6%20Registro%20de%20Embarques/Pregunta%201/';
+        // ✅ URL base correcta (de tu ejemplo que funciona)
+        const SHAREPOINT_BASE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta/';
+        
+        const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta%201/';
 
         function decodificarDatos() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -155,12 +157,23 @@
 
         function reconstruirURLFoto(codigo, tipo) {
             if (!codigo) return null;
+            
             const base = tipo === 'b' ? SHAREPOINT_BASE : SHAREPOINT_BASE_2;
-            return `${base}${codigo}_Juan%20RAYMUNDO.jpg`;
+            
+            // El código ya viene con "_Juan RAYMUNDO" desde el script
+            // Solo necesitamos agregar la extensión
+            const url = `${base}${codigo}.jpeg`;
+            
+            console.log(`📸 URL foto ${tipo}:`, url);
+            console.log(`   Código recibido: "${codigo}"`);
+            
+            return url;
         }
 
         function mostrarDatos(datos) {
             const content = document.getElementById('content');
+            
+            console.log('📦 Datos completos:', datos);
             
             let html = '';
             
@@ -198,7 +211,6 @@
             
             // Mostrar registros
             datos.d.forEach((reg, index) => {
-                // ✅ CAMBIO AQUÍ: 18 → 10
                 let numeroGlobal = datos.pts > 1 ? 
                     ((datos.pt - 1) * 10) + index + 1 : 
                     index + 1;
@@ -246,7 +258,10 @@
                 if (fotoBL) {
                     html += `
                         <div class="foto">
-                            <img src="${fotoBL}" alt="Foto BL" onclick="window.open('${fotoBL}', '_blank')">
+                            <img src="${fotoBL}" 
+                                 alt="Foto BL" 
+                                 onclick="window.open('${fotoBL}', '_blank')"
+                                 onerror="handleImageError(this, 'BL', '${fotoBL}')">
                             <p>📄 Bill of Lading</p>
                         </div>
                     `;
@@ -255,7 +270,10 @@
                 if (fotoEmbarque) {
                     html += `
                         <div class="foto">
-                            <img src="${fotoEmbarque}" alt="Foto Embarque" onclick="window.open('${fotoEmbarque}', '_blank')">
+                            <img src="${fotoEmbarque}" 
+                                 alt="Foto Embarque" 
+                                 onclick="window.open('${fotoEmbarque}', '_blank')"
+                                 onerror="handleImageError(this, 'Embarque', '${fotoEmbarque}')">
                             <p>📦 Foto Embarque</p>
                         </div>
                     `;
@@ -267,11 +285,20 @@
             content.innerHTML = html;
         }
 
+        function handleImageError(img, tipo, url) {
+            console.error(`❌ Error cargando foto ${tipo}:`, url);
+            img.parentElement.innerHTML = `
+                <p style="color:#dc3545; padding: 20px;">❌ Error al cargar foto ${tipo}</p>
+                <small style="word-break: break-all; color: #666;">${url}</small>
+            `;
+        }
+
         try {
             const datos = decodificarDatos();
-            console.log('Datos decodificados:', datos);
+            console.log('✅ Datos decodificados correctamente');
             mostrarDatos(datos);
         } catch (error) {
+            console.error('❌ Error:', error);
             document.getElementById('content').innerHTML = `
                 <div class="error">
                     <h2>❌ Error</h2>
