@@ -138,11 +138,12 @@
     </div>
 
     <script>
-        // ✅ URLs CORREGIDAS - Carpetas diferentes para cada tipo de foto
         const SHAREPOINT_BASE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta/';
         
-        // ✅ CORREGIDO: Foto Embarque va en carpeta "Foto BL"
         const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Foto%20BL/';
+
+        // ✅ Array de extensiones para probar
+        const EXTENSIONES = ['.jpeg', '.jpg', '.png', '.JPEG', '.JPG', '.PNG'];
 
         function decodificarDatos() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -156,27 +157,46 @@
             return JSON.parse(json);
         }
 
-        function reconstruirURLFoto(codigo, tipo) {
-            if (!codigo) return null;
+        function obtenerURLsAlternativas(codigo, tipo) {
+            if (!codigo) return [];
             
             const base = tipo === 'b' ? SHAREPOINT_BASE : SHAREPOINT_BASE_2;
             
-            // El código ya viene completo con "_Juan RAYMUNDO"
-            const url = `${base}${codigo}.jpeg`;
+            // Generar URLs con todas las extensiones posibles
+            return EXTENSIONES.map(ext => `${base}${codigo}${ext}`);
+        }
+
+        function intentarCargarImagen(imgElement, urls, index = 0) {
+            if (index >= urls.length) {
+                // Todas las URLs fallaron
+                const tipo = imgElement.dataset.tipo;
+                console.error(`❌ Todas las URLs fallaron para foto ${tipo}`);
+                imgElement.parentElement.innerHTML = `
+                    <p style="color:#dc3545; padding: 20px;">❌ Error al cargar foto ${tipo}</p>
+                    <small style="word-break: break-all; color: #666; display: block; margin-top: 10px;">
+                        Intentadas: ${urls.length} URLs diferentes
+                    </small>
+                `;
+                return;
+            }
+
+            const url = urls[index];
+            console.log(`🔄 Intentando cargar (${index + 1}/${urls.length}):`, url);
             
-            console.log(`📸 URL foto ${tipo === 'b' ? 'BL' : 'Embarque'}:`, url);
-            
-            return url;
+            imgElement.onerror = () => intentarCargarImagen(imgElement, urls, index + 1);
+            imgElement.onload = () => console.log(`✅ Foto cargada exitosamente:`, url);
+            imgElement.src = url;
         }
 
         function mostrarDatos(datos) {
             const content = document.getElementById('content');
             
             console.log('📦 Datos completos:', datos);
+            console.log('📸 Código foto BL:', datos.b);
+            console.log('📸 Código foto Embarque:', datos.f);
             
             let html = '';
             
-            // Advertencia si es multi-parte
             if (datos.pts > 1) {
                 html += `
                     <div class="warning-multi">
@@ -208,7 +228,6 @@
             
             html += `</div>`;
             
-            // Mostrar registros
             datos.d.forEach((reg, index) => {
                 let numeroGlobal = datos.pts > 1 ? 
                     ((datos.pt - 1) * 10) + index + 1 : 
@@ -245,34 +264,30 @@
                 `;
             });
             
-            // Fotos (solo en primera parte)
-            const fotoBL = reconstruirURLFoto(datos.b, 'b');
-            const fotoEmbarque = reconstruirURLFoto(datos.f, 'f');
-            
-            if (fotoBL || fotoEmbarque) {
+            if (datos.b || datos.f) {
                 html += '<div class="fotos-embarque">';
                 html += '<h3>📸 Fotos del Embarque</h3>';
                 html += '<div class="fotos-grid">';
                 
-                if (fotoBL) {
+                if (datos.b) {
                     html += `
                         <div class="foto">
-                            <img src="${fotoBL}" 
+                            <img id="fotoBL" 
                                  alt="Foto BL" 
-                                 onclick="window.open('${fotoBL}', '_blank')"
-                                 onerror="handleImageError(this, 'BL', '${fotoBL}')">
+                                 data-tipo="BL"
+                                 style="cursor: pointer;">
                             <p>📄 Bill of Lading</p>
                         </div>
                     `;
                 }
                 
-                if (fotoEmbarque) {
+                if (datos.f) {
                     html += `
                         <div class="foto">
-                            <img src="${fotoEmbarque}" 
-                                 alt="Foto Embarque" 
-                                 onclick="window.open('${fotoEmbarque}', '_blank')"
-                                 onerror="handleImageError(this, 'Embarque', '${fotoEmbarque}')">
+                            <img id="fotoEmbarque" 
+                                 alt="Foto Embarque"
+                                 data-tipo="Embarque"
+                                 style="cursor: pointer;">
                             <p>📦 Foto Embarque</p>
                         </div>
                     `;
@@ -282,14 +297,23 @@
             }
             
             content.innerHTML = html;
-        }
 
-        function handleImageError(img, tipo, url) {
-            console.error(`❌ Error cargando foto ${tipo}:`, url);
-            img.parentElement.innerHTML = `
-                <p style="color:#dc3545; padding: 20px;">❌ Error al cargar foto ${tipo}</p>
-                <small style="word-break: break-all; color: #666; display: block; margin-top: 10px;">${url}</small>
-            `;
+            // Cargar fotos con sistema de fallback
+            if (datos.b) {
+                const imgBL = document.getElementById('fotoBL');
+                const urlsBL = obtenerURLsAlternativas(datos.b, 'b');
+                console.log(`📋 URLs a probar para foto BL (${urlsBL.length}):`, urlsBL);
+                imgBL.onclick = () => window.open(imgBL.src, '_blank');
+                intentarCargarImagen(imgBL, urlsBL);
+            }
+            
+            if (datos.f) {
+                const imgEmb = document.getElementById('fotoEmbarque');
+                const urlsEmb = obtenerURLsAlternativas(datos.f, 'f');
+                console.log(`📋 URLs a probar para foto Embarque (${urlsEmb.length}):`, urlsEmb);
+                imgEmb.onclick = () => window.open(imgEmb.src, '_blank');
+                intentarCargarImagen(imgEmb, urlsEmb);
+            }
         }
 
         try {
