@@ -138,10 +138,11 @@
     </div>
 
     <script>
-        // ✅ URL base correcta (de tu ejemplo que funciona)
+        // ✅ URLs CORREGIDAS - Carpetas diferentes para cada tipo de foto
         const SHAREPOINT_BASE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta/';
         
-        const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta%201/';
+        // ✅ CORREGIDO: Foto Embarque va en carpeta "Foto BL"
+        const SHAREPOINT_BASE_2 = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Foto%20BL/';
 
         function decodificarDatos() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -160,12 +161,10 @@
             
             const base = tipo === 'b' ? SHAREPOINT_BASE : SHAREPOINT_BASE_2;
             
-            // El código ya viene con "_Juan RAYMUNDO" desde el script
-            // Solo necesitamos agregar la extensión
+            // El código ya viene completo con "_Juan RAYMUNDO"
             const url = `${base}${codigo}.jpeg`;
             
-            console.log(`📸 URL foto ${tipo}:`, url);
-            console.log(`   Código recibido: "${codigo}"`);
+            console.log(`📸 URL foto ${tipo === 'b' ? 'BL' : 'Embarque'}:`, url);
             
             return url;
         }
@@ -289,7 +288,7 @@
             console.error(`❌ Error cargando foto ${tipo}:`, url);
             img.parentElement.innerHTML = `
                 <p style="color:#dc3545; padding: 20px;">❌ Error al cargar foto ${tipo}</p>
-                <small style="word-break: break-all; color: #666;">${url}</small>
+                <small style="word-break: break-all; color: #666; display: block; margin-top: 10px;">${url}</small>
             `;
         }
 
