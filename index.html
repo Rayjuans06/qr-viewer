@@ -83,37 +83,37 @@
         .campo:nth-child(odd) { background: #f9f9f9; }
         .campo-label { font-weight: 600; color: #666; }
         .campo-valor { color: #333; font-weight: 500; }
-        .fotos-embarque {
-            margin-top: 30px;
-            padding: 20px;
+        
+        /* ✅ NUEVA SECCIÓN: FOTO DENTRO DEL REGISTRO */
+        .foto-registro {
+            margin-top: 15px;
+            padding: 15px;
             background: #f9f9f9;
             border-radius: 8px;
-        }
-        .fotos-embarque h3 {
             text-align: center;
+        }
+        .foto-registro h4 {
             color: #DC143C;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
-        .fotos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .foto { text-align: center; }
-        .foto img {
+        .foto-registro img {
             max-width: 100%;
+            max-height: 300px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .foto img:hover { transform: scale(1.05); }
-        .foto p {
-            margin-top: 10px;
-            font-weight: 600;
-            color: #666;
-            font-size: 14px;
+        .foto-registro img:hover {
+            transform: scale(1.05);
         }
+        .foto-placeholder {
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+        }
+        
         .error {
             text-align: center;
             padding: 50px;
@@ -138,11 +138,6 @@
     </div>
 
     <script>
-        // URL base solo para Foto Embarque (Foto BL viene completa)
-        const SHAREPOINT_BASE_EMBARQUE = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Foto%20BL/';
-
-        const EXTENSIONES = ['.jpeg', '.jpg', '.png', '.JPEG', '.JPG', '.PNG'];
-
         function decodificarDatos() {
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('d');
@@ -155,48 +150,10 @@
             return JSON.parse(json);
         }
 
-        function obtenerURLsFoto(dato, tipo) {
-            // Si 'dato' es una URL completa, usarla directamente
-            if (dato && dato.startsWith('http')) {
-                console.log(`✅ ${tipo}: URL completa recibida`);
-                return [dato];
-            }
-            
-            // Si es un código, reconstruir URL
-            if (dato && tipo === 'Embarque') {
-                return EXTENSIONES.map(ext => `${SHAREPOINT_BASE_EMBARQUE}${dato}${ext}`);
-            }
-            
-            return [];
-        }
-
-        function intentarCargarImagen(imgElement, urls, index = 0) {
-            if (index >= urls.length) {
-                const tipo = imgElement.dataset.tipo;
-                console.error(`❌ Todas las URLs fallaron para foto ${tipo}`);
-                imgElement.parentElement.innerHTML = `
-                    <p style="color:#dc3545; padding: 20px;">❌ Error al cargar foto ${tipo}</p>
-                    <small style="word-break: break-all; color: #666; display: block; margin-top: 10px;">
-                        Intentadas: ${urls.length} URLs diferentes
-                    </small>
-                `;
-                return;
-            }
-
-            const url = urls[index];
-            console.log(`🔄 Intentando cargar ${imgElement.dataset.tipo} (${index + 1}/${urls.length}):`, url);
-            
-            imgElement.onerror = () => intentarCargarImagen(imgElement, urls, index + 1);
-            imgElement.onload = () => console.log(`✅ Foto ${imgElement.dataset.tipo} cargada exitosamente`);
-            imgElement.src = url;
-        }
-
         function mostrarDatos(datos) {
             const content = document.getElementById('content');
             
             console.log('📦 Datos completos:', datos);
-            console.log('📸 Foto BL:', datos.b);
-            console.log('📸 Foto Embarque:', datos.f);
             
             let html = '';
             
@@ -231,6 +188,7 @@
             
             html += `</div>`;
             
+            // ✅ MOSTRAR CADA REGISTRO CON SU FOTO
             datos.d.forEach((reg, index) => {
                 let numeroGlobal = datos.pts > 1 ? 
                     ((datos.pt - 1) * 10) + index + 1 : 
@@ -263,58 +221,31 @@
                             <div class="campo-label">PO:</div>
                             <div class="campo-valor">${reg.o || 'N/A'}</div>
                         </div>
-                    </div>
                 `;
+                
+                // ✅ FOTO DEL REGISTRO
+                if (reg.b) {
+                    html += `
+                        <div class="foto-registro">
+                            <h4>📸 Foto BL</h4>
+                            <img src="${reg.b}" 
+                                 alt="Foto BL Registro ${numeroGlobal}"
+                                 onclick="window.open('${reg.b}', '_blank')"
+                                 onerror="this.parentElement.innerHTML='<div class=foto-placeholder>❌ Imagen no disponible</div>'">
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="foto-registro">
+                            <div class="foto-placeholder">📷 Sin foto disponible</div>
+                        </div>
+                    `;
+                }
+                
+                html += `</div>`;
             });
             
-            if (datos.b || datos.f) {
-                html += '<div class="fotos-embarque">';
-                html += '<h3>📸 Fotos del Embarque</h3>';
-                html += '<div class="fotos-grid">';
-                
-                if (datos.b) {
-                    html += `
-                        <div class="foto">
-                            <img id="fotoBL" 
-                                 alt="Foto BL" 
-                                 data-tipo="BL"
-                                 style="cursor: pointer;">
-                            <p>📄 Bill of Lading</p>
-                        </div>
-                    `;
-                }
-                
-                if (datos.f) {
-                    html += `
-                        <div class="foto">
-                            <img id="fotoEmbarque" 
-                                 alt="Foto Embarque"
-                                 data-tipo="Embarque"
-                                 style="cursor: pointer;">
-                            <p>📦 Foto Embarque</p>
-                        </div>
-                    `;
-                }
-                
-                html += '</div></div>';
-            }
-            
             content.innerHTML = html;
-
-            // Cargar fotos
-            if (datos.b) {
-                const imgBL = document.getElementById('fotoBL');
-                const urlsBL = obtenerURLsFoto(datos.b, 'BL');
-                imgBL.onclick = () => window.open(imgBL.src, '_blank');
-                intentarCargarImagen(imgBL, urlsBL);
-            }
-            
-            if (datos.f) {
-                const imgEmb = document.getElementById('fotoEmbarque');
-                const urlsEmb = obtenerURLsFoto(datos.f, 'Embarque');
-                imgEmb.onclick = () => window.open(imgEmb.src, '_blank');
-                intentarCargarImagen(imgEmb, urlsEmb);
-            }
         }
 
         try {
