@@ -57,6 +57,24 @@
             margin-top: 10px;
             font-weight: 600;
         }
+        .foto-embarque {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .foto-embarque h3 {
+            color: #DC143C;
+            margin-bottom: 15px;
+        }
+        .foto-embarque img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
         .registro {
             background: white;
             border: 2px solid #e0e0e0;
@@ -83,37 +101,6 @@
         .campo:nth-child(odd) { background: #f9f9f9; }
         .campo-label { font-weight: 600; color: #666; }
         .campo-valor { color: #333; font-weight: 500; }
-        
-        /* ✅ NUEVA SECCIÓN: FOTO DENTRO DEL REGISTRO */
-        .foto-registro {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .foto-registro h4 {
-            color: #DC143C;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        .foto-registro img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .foto-registro img:hover {
-            transform: scale(1.05);
-        }
-        .foto-placeholder {
-            color: #999;
-            font-style: italic;
-            padding: 20px;
-        }
-        
         .error {
             text-align: center;
             padding: 50px;
@@ -138,6 +125,10 @@
     </div>
 
     <script>
+        // ✅ URL base para reconstruir fotos BL
+        const SHAREPOINT_BASE_BL = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta/';
+        const EXTENSIONES = ['.jpeg', '.jpg', '.png', '.JPEG', '.JPG', '.PNG'];
+
         function decodificarDatos() {
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('d');
@@ -148,6 +139,29 @@
             
             const json = decodeURIComponent(escape(atob(dataParam)));
             return JSON.parse(json);
+        }
+
+        function obtenerURLsFotoBL(codigo) {
+            if (!codigo) return [];
+            return EXTENSIONES.map(ext => `${SHAREPOINT_BASE_BL}${codigo}${ext}`);
+        }
+
+        function intentarCargarImagen(imgElement, urls, index = 0) {
+            if (index >= urls.length) {
+                console.error(`❌ No se pudo cargar la foto BL`);
+                imgElement.parentElement.innerHTML = '<p style="color:#999;">📷 Imagen no disponible</p>';
+                return;
+            }
+
+            const url = urls[index];
+            console.log(`🔄 Intentando cargar foto BL (${index + 1}/${urls.length}):`, url);
+            
+            imgElement.onerror = () => intentarCargarImagen(imgElement, urls, index + 1);
+            imgElement.onload = () => {
+                console.log(`✅ Foto BL cargada exitosamente`);
+                imgElement.onclick = () => window.open(url, '_blank');
+            };
+            imgElement.src = url;
         }
 
         function mostrarDatos(datos) {
@@ -188,7 +202,17 @@
             
             html += `</div>`;
             
-            // ✅ MOSTRAR CADA REGISTRO CON SU FOTO
+            // ✅ FOTO BL DEL EMBARQUE (solo en primera parte)
+            if (datos.bl) {
+                html += `
+                    <div class="foto-embarque">
+                        <h3>📸 Bill of Lading</h3>
+                        <img id="fotoBL" alt="Foto BL">
+                    </div>
+                `;
+            }
+            
+            // ✅ REGISTROS
             datos.d.forEach((reg, index) => {
                 let numeroGlobal = datos.pts > 1 ? 
                     ((datos.pt - 1) * 10) + index + 1 : 
@@ -210,7 +234,7 @@
                             <div class="campo-valor">${reg.q || 'N/A'}</div>
                         </div>
                         <div class="campo">
-                            <div class="campo-label">DELIVERY MX:</div>
+                            <div class="campo-label">BL MEXICO:</div>
                             <div class="campo-valor">${reg.m || 'N/A'}</div>
                         </div>
                         <div class="campo">
@@ -221,31 +245,21 @@
                             <div class="campo-label">PO:</div>
                             <div class="campo-valor">${reg.o || 'N/A'}</div>
                         </div>
+                    </div>
                 `;
-                
-                // ✅ FOTO DEL REGISTRO
-                if (reg.b) {
-                    html += `
-                        <div class="foto-registro">
-                            <h4>📸 Foto BL</h4>
-                            <img src="${reg.b}" 
-                                 alt="Foto BL Registro ${numeroGlobal}"
-                                 onclick="window.open('${reg.b}', '_blank')"
-                                 onerror="this.parentElement.innerHTML='<div class=foto-placeholder>❌ Imagen no disponible</div>'">
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <div class="foto-registro">
-                            <div class="foto-placeholder">📷 Sin foto disponible</div>
-                        </div>
-                    `;
-                }
-                
-                html += `</div>`;
             });
             
             content.innerHTML = html;
+
+            // Cargar foto BL después de insertar HTML
+            if (datos.bl) {
+                const img = document.getElementById('fotoBL');
+                if (img) {
+                    const urls = obtenerURLsFotoBL(datos.bl);
+                    console.log(`📋 URLs a probar para foto BL:`, urls);
+                    intentarCargarImagen(img, urls);
+                }
+            }
         }
 
         try {
