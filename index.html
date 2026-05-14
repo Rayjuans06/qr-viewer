@@ -5,94 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Embarque - LAUAK</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #DC143C 0%, #A01020 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        .header h1 { font-size: 28px; margin-bottom: 5px; }
-        .warning-multi {
-            background: #FFF3CD;
-            border: 2px solid #FFC107;
-            color: #856404;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-        }
-        .info { padding: 25px; }
-        .shipment-info {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        .shipment-info h2 {
-            color: #DC143C;
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-        .parte-info {
-            background: #E3F2FD;
-            color: #1976D2;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-weight: 600;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
         }
         
-        /* GALERÍA DE FOTOS */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 40px 30px;
+            border-bottom: 3px solid #DC143C;
+        }
+        
+        .header h1 { 
+            font-size: 32px; 
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .warning-multi {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffe7a8 100%);
+            border-left: 4px solid #ffa726;
+            color: #7d5200;
+            padding: 20px 25px;
+            margin: 30px 30px 0 30px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .info { 
+            padding: 40px 30px; 
+        }
+        
+        .shipment-info {
+            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .shipment-info h2 {
+            color: #1a1a1a;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+        
+        .shipment-info .meta {
+            color: #666;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .parte-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            border-left: 4px solid #1976D2;
+        }
+        
+        /* GALERÍA MINIMALISTA */
         .galeria-fotos {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px 0;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
         }
         
         .foto-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
+            background: #fafafa;
+            border-radius: 16px;
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e0e0e0;
         }
         
         .foto-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #DC143C;
         }
         
         .foto-header {
-            background: #DC143C;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
+            background: white;
+            padding: 18px 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .foto-header .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .foto-header .bl-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
         }
         
         .foto-container {
             position: relative;
             width: 100%;
-            padding-top: 75%; /* Ratio 4:3 */
-            background: #f0f0f0;
+            padding-top: 66.67%; /* Ratio 3:2 */
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
             overflow: hidden;
         }
         
@@ -104,11 +160,13 @@
             height: 100%;
             object-fit: cover;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: brightness(0.98) contrast(1.02);
         }
         
         .foto-container img:hover {
-            transform: scale(1.05);
+            transform: scale(1.08);
+            filter: brightness(1) contrast(1.05);
         }
         
         .foto-placeholder {
@@ -116,46 +174,155 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #999;
+            color: #bbb;
             text-align: center;
-            font-size: 48px;
+        }
+        
+        .foto-placeholder-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+        
+        .foto-placeholder-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: #999;
         }
         
         .sin-fotos {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: #999;
         }
         
-        .sin-fotos svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
+        .sin-fotos-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            opacity: 0.2;
+        }
+        
+        .sin-fotos h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .sin-fotos p {
+            font-size: 16px;
+            color: #999;
+            font-weight: 400;
         }
         
         .error {
             text-align: center;
-            padding: 50px;
+            padding: 80px 30px;
+        }
+        
+        .error h2 {
+            font-size: 28px;
             color: #DC143C;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .error p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Badge de contador */
+        .counter-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #DC143C 0%, #a01020 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Loading animation */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
         
         @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            .container {
+                border-radius: 16px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 { 
+                font-size: 24px; 
+            }
+            
+            .info {
+                padding: 30px 20px;
+            }
+            
+            .shipment-info {
+                padding: 25px 20px;
+            }
+            
+            .shipment-info h2 {
+                font-size: 32px;
+            }
+            
             .galeria-fotos {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
-            .header h1 { font-size: 22px; }
-            .shipment-info h2 { font-size: 24px; }
+            
+            .warning-multi {
+                margin: 20px 15px 0 15px;
+                padding: 18px 20px;
+            }
+        }
+        
+        @media (min-width: 1600px) {
+            .galeria-fotos {
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📦 Embarque LAUAK</h1>
+            <div class="subtitle">Sistema de Gestión</div>
+            <h1>Embarque LAUAK</h1>
         </div>
         
         <div id="content" class="info">
-            <p>Cargando...</p>
+            <div class="loading">Cargando información</div>
         </div>
     </div>
 
@@ -168,7 +335,7 @@
             const dataParam = urlParams.get('d');
             
             if (!dataParam) {
-                throw new Error('No se encontraron datos en el QR');
+                throw new Error('No se encontraron datos en el código QR');
             }
             
             const json = decodeURIComponent(escape(atob(dataParam)));
@@ -185,8 +352,8 @@
                 console.error(`❌ No se encontró foto para BL ${blMexico}`);
                 imgElement.parentElement.innerHTML = `
                     <div class="foto-placeholder">
-                        📷
-                        <div style="font-size: 14px; margin-top: 10px;">Sin imagen</div>
+                        <div class="foto-placeholder-icon">📷</div>
+                        <div class="foto-placeholder-text">Imagen no disponible</div>
                     </div>
                 `;
                 return;
@@ -198,6 +365,11 @@
             imgElement.onload = () => {
                 console.log(`✅ Foto cargada: BL ${blMexico}`);
                 imgElement.onclick = () => window.open(url, '_blank');
+                imgElement.style.opacity = '0';
+                setTimeout(() => {
+                    imgElement.style.transition = 'opacity 0.4s ease';
+                    imgElement.style.opacity = '1';
+                }, 50);
             };
             imgElement.src = url;
         }
@@ -212,33 +384,29 @@
             if (datos.pts > 1) {
                 html += `
                     <div class="warning-multi">
-                        ⚠️ Este embarque tiene ${datos.t} fotos divididas en ${datos.pts} QR
-                        <br>Escanea TODOS los QR para ver todas las fotos
+                        <strong>⚠️ Información Parcial</strong><br>
+                        Este embarque tiene ${datos.t} fotos divididas en ${datos.pts} códigos QR.<br>
+                        Escanea todos los códigos para ver la galería completa.
+                    </div>
+                `;
+            }
+            
+            html += `<div class="shipment-info">`;
+            
+            if (datos.pts > 1) {
+                html += `
+                    <div class="parte-info">
+                        📄 Mostrando parte ${datos.pt} de ${datos.pts} • 
+                        ${datos.c} de ${datos.t} fotos
                     </div>
                 `;
             }
             
             html += `
-                <div class="shipment-info">
-                    <h2>Embarque ${datos.i}</h2>
-            `;
-            
-            if (datos.pts > 1) {
-                html += `
-                    <div class="parte-info">
-                        📄 Parte ${datos.pt} de ${datos.pts} | 
-                        ${datos.c} de ${datos.t} fotos
-                    </div>
-                `;
-            } else {
-                html += `
-                    <p style="color: #666; margin-top: 5px;">
-                        <strong>${datos.c}</strong> ${datos.c === 1 ? 'foto' : 'fotos'}
-                    </p>
-                `;
-            }
-            
-            html += `</div>`;
+                <h2>${datos.i}</h2>
+                <div class="meta">Embarque de Mercancías</div>
+                <span class="counter-badge">${datos.c} ${datos.c === 1 ? 'Foto' : 'Fotos'}</span>
+            </div>`;
             
             // Filtrar registros que tengan foto
             const registrosConFoto = datos.d.filter(reg => reg.f && reg.f !== "");
@@ -246,30 +414,27 @@
             if (registrosConFoto.length === 0) {
                 html += `
                     <div class="sin-fotos">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg class="sin-fotos-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                             <circle cx="8.5" cy="8.5" r="1.5"/>
                             <polyline points="21 15 16 10 5 21"/>
                         </svg>
-                        <h3>No hay fotos disponibles</h3>
-                        <p>Este embarque no tiene fotos asociadas</p>
+                        <h3>Sin fotografías disponibles</h3>
+                        <p>Este embarque no tiene imágenes asociadas</p>
                     </div>
                 `;
             } else {
                 html += '<div class="galeria-fotos">';
                 
                 registrosConFoto.forEach((reg, index) => {
-                    let numeroGlobal = datos.pts > 1 ? 
-                        ((datos.pt - 1) * 10) + (datos.d.indexOf(reg) + 1) : 
-                        datos.d.indexOf(reg) + 1;
-                    
                     html += `
                         <div class="foto-card">
                             <div class="foto-header">
-                                BL Mexico: ${reg.bl || 'N/A'}
+                                <div class="label">BL Mexico</div>
+                                <div class="bl-number">${reg.bl || 'N/A'}</div>
                             </div>
                             <div class="foto-container">
-                                <img id="foto_${index}" alt="Foto BL ${reg.bl}">
+                                <img id="foto_${index}" alt="Fotografía BL ${reg.bl}" loading="lazy">
                             </div>
                         </div>
                     `;
@@ -280,7 +445,7 @@
             
             content.innerHTML = html;
 
-            // Cargar fotos
+            // Cargar fotos con fade-in
             registrosConFoto.forEach((reg, index) => {
                 const img = document.getElementById(`foto_${index}`);
                 if (img && reg.f) {
@@ -292,16 +457,16 @@
 
         try {
             const datos = decodificarDatos();
-            console.log('✅ Datos decodificados');
+            console.log('✅ Datos decodificados correctamente');
             mostrarDatos(datos);
         } catch (error) {
             console.error('❌ Error:', error);
             document.getElementById('content').innerHTML = `
                 <div class="error">
-                    <h2>❌ Error</h2>
+                    <h2>⚠️ Error de Lectura</h2>
                     <p>${error.message}</p>
-                    <p style="margin-top: 10px; color: #666;">
-                        Por favor, escanea un código QR válido.
+                    <p style="margin-top: 15px; font-size: 14px;">
+                        Por favor, escanea un código QR válido del sistema LAUAK.
                     </p>
                 </div>
             `;
