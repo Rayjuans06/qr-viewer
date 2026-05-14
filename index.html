@@ -12,7 +12,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -57,67 +57,92 @@
             margin-top: 10px;
             font-weight: 600;
         }
-        .foto-embarque {
-            margin: 20px 0;
-            padding: 20px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            text-align: center;
+        
+        /* GALERÍA DE FOTOS */
+        .galeria-fotos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
         }
-        .foto-embarque h3 {
-            color: #DC143C;
-            margin-bottom: 15px;
-        }
-        .foto-embarque img {
-            max-width: 100%;
-            max-height: 400px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            cursor: pointer;
-        }
-        .registro {
+        
+        .foto-card {
             background: white;
             border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .registro-header {
+        
+        .foto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .foto-header {
             background: #DC143C;
             color: white;
-            padding: 10px;
-            margin: -15px -15px 15px -15px;
-            font-weight: bold;
+            padding: 12px;
             text-align: center;
-            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            font-size: 18px;
         }
-        .campo {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 10px;
-            padding: 10px;
-            margin-bottom: 5px;
+        
+        .foto-container {
+            position: relative;
+            width: 100%;
+            padding-top: 75%; /* Ratio 4:3 */
+            background: #f0f0f0;
+            overflow: hidden;
         }
-        .campo:nth-child(odd) { background: #f9f9f9; }
-        .campo-label { font-weight: 600; color: #666; }
-        .campo-valor { color: #333; font-weight: 500; }
-        .debug-box {
-            margin: 20px 0;
-            padding: 15px;
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            word-break: break-all;
+        
+        .foto-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
         }
+        
+        .foto-container img:hover {
+            transform: scale(1.05);
+        }
+        
+        .foto-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            text-align: center;
+            font-size: 48px;
+        }
+        
+        .sin-fotos {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .sin-fotos svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        
         .error {
             text-align: center;
             padding: 50px;
             color: #DC143C;
         }
+        
         @media (max-width: 768px) {
-            .campo { grid-template-columns: 1fr; }
+            .galeria-fotos {
+                grid-template-columns: 1fr;
+            }
             .header h1 { font-size: 22px; }
             .shipment-info h2 { font-size: 24px; }
         }
@@ -150,72 +175,45 @@
             return JSON.parse(json);
         }
 
-        function obtenerURLsFotoBL(codigo) {
-            if (!codigo) {
-                console.warn('⚠️ No hay código de foto BL');
-                return [];
-            }
-            console.log(`📋 Código foto BL recibido: "${codigo}"`);
-            const urls = EXTENSIONES.map(ext => `${SHAREPOINT_BASE_BL}${codigo}${ext}`);
-            console.log(`📋 URLs generadas (${urls.length}):`, urls);
-            return urls;
+        function obtenerURLsFoto(codigo) {
+            if (!codigo) return [];
+            return EXTENSIONES.map(ext => `${SHAREPOINT_BASE_BL}${codigo}${ext}`);
         }
 
-        function intentarCargarImagen(imgElement, urls, index = 0) {
+        function intentarCargarImagen(imgElement, urls, blMexico, index = 0) {
             if (index >= urls.length) {
-                console.error(`❌ Todas las URLs fallaron. Total intentos: ${urls.length}`);
+                console.error(`❌ No se encontró foto para BL ${blMexico}`);
                 imgElement.parentElement.innerHTML = `
-                    <div class="debug-box">
-                        <strong>❌ Error al cargar imagen</strong><br>
-                        Se intentaron ${urls.length} URLs sin éxito.<br><br>
-                        <strong>URLs probadas:</strong><br>
-                        ${urls.map((u, i) => `${i + 1}. ${u}`).join('<br>')}
+                    <div class="foto-placeholder">
+                        📷
+                        <div style="font-size: 14px; margin-top: 10px;">Sin imagen</div>
                     </div>
                 `;
                 return;
             }
 
             const url = urls[index];
-            console.log(`🔄 Intento ${index + 1}/${urls.length}: ${url}`);
             
-            imgElement.onerror = () => {
-                console.error(`❌ Falló: ${url}`);
-                intentarCargarImagen(imgElement, urls, index + 1);
-            };
-            
+            imgElement.onerror = () => intentarCargarImagen(imgElement, urls, blMexico, index + 1);
             imgElement.onload = () => {
-                console.log(`✅ ÉXITO: Imagen cargada desde: ${url}`);
+                console.log(`✅ Foto cargada: BL ${blMexico}`);
                 imgElement.onclick = () => window.open(url, '_blank');
             };
-            
             imgElement.src = url;
         }
 
         function mostrarDatos(datos) {
             const content = document.getElementById('content');
             
-            console.log('📦 Datos completos:', datos);
-            console.log('📸 Código foto BL:', datos.bl || 'NO PRESENTE');
-            console.log('🔢 Total registros:', datos.c);
+            console.log('📦 Datos:', datos);
             
             let html = '';
-            
-            // Debug info
-            html += `
-                <div class="debug-box">
-                    <strong>🔍 DEBUG INFO:</strong><br>
-                    Embarque: ${datos.i}<br>
-                    Registros: ${datos.c} de ${datos.t}<br>
-                    Parte: ${datos.pt}/${datos.pts}<br>
-                    Código Foto BL: ${datos.bl || '❌ NO PRESENTE'}
-                </div>
-            `;
             
             if (datos.pts > 1) {
                 html += `
                     <div class="warning-multi">
-                        ⚠️ Este embarque tiene ${datos.t} registros divididos en ${datos.pts} QR
-                        <br>Escanea TODOS los QR para ver la información completa
+                        ⚠️ Este embarque tiene ${datos.t} fotos divididas en ${datos.pts} QR
+                        <br>Escanea TODOS los QR para ver todas las fotos
                     </div>
                 `;
             }
@@ -229,92 +227,72 @@
                 html += `
                     <div class="parte-info">
                         📄 Parte ${datos.pt} de ${datos.pts} | 
-                        ${datos.c} de ${datos.t} registros
+                        ${datos.c} de ${datos.t} fotos
                     </div>
                 `;
             } else {
                 html += `
                     <p style="color: #666; margin-top: 5px;">
-                        <strong>${datos.c}</strong> ${datos.c === 1 ? 'registro' : 'registros'}
+                        <strong>${datos.c}</strong> ${datos.c === 1 ? 'foto' : 'fotos'}
                     </p>
                 `;
             }
             
             html += `</div>`;
             
-            // FOTO BL
-            if (datos.bl) {
-                console.log('✅ Foto BL detectada, agregando sección...');
+            // Filtrar registros que tengan foto
+            const registrosConFoto = datos.d.filter(reg => reg.f && reg.f !== "");
+            
+            if (registrosConFoto.length === 0) {
                 html += `
-                    <div class="foto-embarque">
-                        <h3>📸 Bill of Lading</h3>
-                        <img id="fotoBL" alt="Foto BL" style="min-height: 200px; background: #f0f0f0;">
+                    <div class="sin-fotos">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        <h3>No hay fotos disponibles</h3>
+                        <p>Este embarque no tiene fotos asociadas</p>
                     </div>
                 `;
             } else {
-                console.warn('⚠️ No hay código de foto BL en los datos');
-                html += `
-                    <div class="foto-embarque">
-                        <p style="color: #999;">📷 Sin foto BL disponible</p>
-                    </div>
-                `;
-            }
-            
-            // REGISTROS
-            datos.d.forEach((reg, index) => {
-                let numeroGlobal = datos.pts > 1 ? 
-                    ((datos.pt - 1) * 10) + index + 1 : 
-                    index + 1;
+                html += '<div class="galeria-fotos">';
+                
+                registrosConFoto.forEach((reg, index) => {
+                    let numeroGlobal = datos.pts > 1 ? 
+                        ((datos.pt - 1) * 10) + (datos.d.indexOf(reg) + 1) : 
+                        datos.d.indexOf(reg) + 1;
                     
-                html += `
-                    <div class="registro">
-                        <div class="registro-header">Registro ${numeroGlobal}${datos.pts > 1 ? ` (de ${datos.t} totales)` : ''}</div>
-                        <div class="campo">
-                            <div class="campo-label">PART NUMBER:</div>
-                            <div class="campo-valor">${reg.p || 'N/A'}</div>
+                    html += `
+                        <div class="foto-card">
+                            <div class="foto-header">
+                                BL Mexico: ${reg.bl || 'N/A'}
+                            </div>
+                            <div class="foto-container">
+                                <img id="foto_${index}" alt="Foto BL ${reg.bl}">
+                            </div>
                         </div>
-                        <div class="campo">
-                            <div class="campo-label">LOT PAR:</div>
-                            <div class="campo-valor">${reg.l || 'N/A'}</div>
-                        </div>
-                        <div class="campo">
-                            <div class="campo-label">QTY:</div>
-                            <div class="campo-valor">${reg.q || 'N/A'}</div>
-                        </div>
-                        <div class="campo">
-                            <div class="campo-label">BL MEXICO:</div>
-                            <div class="campo-valor">${reg.m || 'N/A'}</div>
-                        </div>
-                        <div class="campo">
-                            <div class="campo-label">DELIVERY CAN/FRA:</div>
-                            <div class="campo-valor">${reg.c || 'N/A'}</div>
-                        </div>
-                        <div class="campo">
-                            <div class="campo-label">PO:</div>
-                            <div class="campo-valor">${reg.o || 'N/A'}</div>
-                        </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+                
+                html += '</div>';
+            }
             
             content.innerHTML = html;
 
-            // Cargar foto BL
-            if (datos.bl) {
-                console.log('🔄 Intentando cargar foto BL...');
-                const img = document.getElementById('fotoBL');
-                if (img) {
-                    const urls = obtenerURLsFotoBL(datos.bl);
-                    intentarCargarImagen(img, urls);
-                } else {
-                    console.error('❌ No se encontró el elemento img#fotoBL en el DOM');
+            // Cargar fotos
+            registrosConFoto.forEach((reg, index) => {
+                const img = document.getElementById(`foto_${index}`);
+                if (img && reg.f) {
+                    const urls = obtenerURLsFoto(reg.f);
+                    intentarCargarImagen(img, urls, reg.bl);
                 }
-            }
+            });
         }
 
         try {
             const datos = decodificarDatos();
-            console.log('✅ Datos decodificados correctamente');
+            console.log('✅ Datos decodificados');
             mostrarDatos(datos);
         } catch (error) {
             console.error('❌ Error:', error);
