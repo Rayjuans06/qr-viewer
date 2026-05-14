@@ -101,6 +101,16 @@
         .campo:nth-child(odd) { background: #f9f9f9; }
         .campo-label { font-weight: 600; color: #666; }
         .campo-valor { color: #333; font-weight: 500; }
+        .debug-box {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
         .error {
             text-align: center;
             padding: 50px;
@@ -125,7 +135,6 @@
     </div>
 
     <script>
-        // ✅ URL base para reconstruir fotos BL
         const SHAREPOINT_BASE_BL = 'https://groupelauak-my.sharepoint.com/personal/juan_raymundo_wiprolauak_com/Documents/Aplicaciones/Microsoft%20Forms/Formulario%20sin%20t%C3%ADtulo%201/Pregunta/';
         const EXTENSIONES = ['.jpeg', '.jpg', '.png', '.JPEG', '.JPG', '.PNG'];
 
@@ -142,25 +151,43 @@
         }
 
         function obtenerURLsFotoBL(codigo) {
-            if (!codigo) return [];
-            return EXTENSIONES.map(ext => `${SHAREPOINT_BASE_BL}${codigo}${ext}`);
+            if (!codigo) {
+                console.warn('⚠️ No hay código de foto BL');
+                return [];
+            }
+            console.log(`📋 Código foto BL recibido: "${codigo}"`);
+            const urls = EXTENSIONES.map(ext => `${SHAREPOINT_BASE_BL}${codigo}${ext}`);
+            console.log(`📋 URLs generadas (${urls.length}):`, urls);
+            return urls;
         }
 
         function intentarCargarImagen(imgElement, urls, index = 0) {
             if (index >= urls.length) {
-                console.error(`❌ No se pudo cargar la foto BL`);
-                imgElement.parentElement.innerHTML = '<p style="color:#999;">📷 Imagen no disponible</p>';
+                console.error(`❌ Todas las URLs fallaron. Total intentos: ${urls.length}`);
+                imgElement.parentElement.innerHTML = `
+                    <div class="debug-box">
+                        <strong>❌ Error al cargar imagen</strong><br>
+                        Se intentaron ${urls.length} URLs sin éxito.<br><br>
+                        <strong>URLs probadas:</strong><br>
+                        ${urls.map((u, i) => `${i + 1}. ${u}`).join('<br>')}
+                    </div>
+                `;
                 return;
             }
 
             const url = urls[index];
-            console.log(`🔄 Intentando cargar foto BL (${index + 1}/${urls.length}):`, url);
+            console.log(`🔄 Intento ${index + 1}/${urls.length}: ${url}`);
             
-            imgElement.onerror = () => intentarCargarImagen(imgElement, urls, index + 1);
+            imgElement.onerror = () => {
+                console.error(`❌ Falló: ${url}`);
+                intentarCargarImagen(imgElement, urls, index + 1);
+            };
+            
             imgElement.onload = () => {
-                console.log(`✅ Foto BL cargada exitosamente`);
+                console.log(`✅ ÉXITO: Imagen cargada desde: ${url}`);
                 imgElement.onclick = () => window.open(url, '_blank');
             };
+            
             imgElement.src = url;
         }
 
@@ -168,8 +195,21 @@
             const content = document.getElementById('content');
             
             console.log('📦 Datos completos:', datos);
+            console.log('📸 Código foto BL:', datos.bl || 'NO PRESENTE');
+            console.log('🔢 Total registros:', datos.c);
             
             let html = '';
+            
+            // Debug info
+            html += `
+                <div class="debug-box">
+                    <strong>🔍 DEBUG INFO:</strong><br>
+                    Embarque: ${datos.i}<br>
+                    Registros: ${datos.c} de ${datos.t}<br>
+                    Parte: ${datos.pt}/${datos.pts}<br>
+                    Código Foto BL: ${datos.bl || '❌ NO PRESENTE'}
+                </div>
+            `;
             
             if (datos.pts > 1) {
                 html += `
@@ -202,17 +242,25 @@
             
             html += `</div>`;
             
-            // ✅ FOTO BL DEL EMBARQUE (solo en primera parte)
+            // FOTO BL
             if (datos.bl) {
+                console.log('✅ Foto BL detectada, agregando sección...');
                 html += `
                     <div class="foto-embarque">
                         <h3>📸 Bill of Lading</h3>
-                        <img id="fotoBL" alt="Foto BL">
+                        <img id="fotoBL" alt="Foto BL" style="min-height: 200px; background: #f0f0f0;">
+                    </div>
+                `;
+            } else {
+                console.warn('⚠️ No hay código de foto BL en los datos');
+                html += `
+                    <div class="foto-embarque">
+                        <p style="color: #999;">📷 Sin foto BL disponible</p>
                     </div>
                 `;
             }
             
-            // ✅ REGISTROS
+            // REGISTROS
             datos.d.forEach((reg, index) => {
                 let numeroGlobal = datos.pts > 1 ? 
                     ((datos.pt - 1) * 10) + index + 1 : 
@@ -251,13 +299,15 @@
             
             content.innerHTML = html;
 
-            // Cargar foto BL después de insertar HTML
+            // Cargar foto BL
             if (datos.bl) {
+                console.log('🔄 Intentando cargar foto BL...');
                 const img = document.getElementById('fotoBL');
                 if (img) {
                     const urls = obtenerURLsFotoBL(datos.bl);
-                    console.log(`📋 URLs a probar para foto BL:`, urls);
                     intentarCargarImagen(img, urls);
+                } else {
+                    console.error('❌ No se encontró el elemento img#fotoBL en el DOM');
                 }
             }
         }
